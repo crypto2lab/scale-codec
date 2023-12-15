@@ -1,0 +1,16 @@
+[package]
+name = "go-scale-codec"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[[bin]]
+name = "go-scale-codec"
+path = "tests/rust-scale-codec/src/lib.rs"
+
+[dependencies]
+parity-scale-codec = "3.6.8"
+
+[workspace]
+resolver = "2"
+members = ["tests/rust-scale-codec"]
