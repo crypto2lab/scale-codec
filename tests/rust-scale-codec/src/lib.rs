@@ -38,4 +38,13 @@ mod tests {
         let b: Result<Result<u64, u8>, bool> = Ok(Err(10 as u8));
         println!("{:?}", b.encode());
     }
+
+    #[test]
+    fn scale_encode_option() {
+        let a: Option<Option<bool>> = Some(None);
+        println!("{:?}", a.encode());
+
+        let a: Option<Result<String, bool>> = Some(Ok(String::from("eclesio")));
+        println!("{:?}", a.encode());
+    }
 }

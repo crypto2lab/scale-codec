@@ -5,6 +5,7 @@ import (
 	"io"
 )
 
+var ErrUnexpectedOptionTag = errors.New("unexpected option tag")
 var ErrUnexpectedResultTag = errors.New("unexpected result tag")
 var ErrCannotEncodeEmptyResult = errors.New("cannot encode empty result")
 var ErrCannotEncodeEmptyOption = errors.New("cannot encode empty option")
@@ -23,9 +24,9 @@ type Encodable interface {
 	Unmarshaler
 }
 
-type Option[T Encodable] struct {
-	inner  T
-	isNone bool
+type Tuple[T Encodable] struct {
+	items []T
+	size  uint
 }
 
 type Vector[T Encodable] struct {
@@ -35,12 +36,5 @@ type Vector[T Encodable] struct {
 type String struct {
 	inner string
 }
-
-type Tuple[T Encodable] struct {
-	items []T
-	size  uint
-}
-
-type Struct struct{}
 
 type Enum struct{}
