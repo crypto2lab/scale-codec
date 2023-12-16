@@ -56,6 +56,7 @@ func (o *Option) UnmarshalSCALE(reader io.Reader) error {
 
 	switch encodedOptionTag[0] {
 	case 0x00:
+		o.inner = nil
 		o.isNone = true
 		return nil
 	case 0x01:

@@ -24,11 +24,6 @@ type Encodable interface {
 	Unmarshaler
 }
 
-type Tuple[T Encodable] struct {
-	items []T
-	size  uint
-}
-
 type Vector[T Encodable] struct {
 	items []T
 }

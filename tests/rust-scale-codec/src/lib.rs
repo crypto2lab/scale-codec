@@ -47,4 +47,13 @@ mod tests {
         let a: Option<Result<String, bool>> = Some(Ok(String::from("eclesio")));
         println!("{:?}", a.encode());
     }
+
+    #[test]
+    fn scale_encode_tuple() {
+        let a: (Option<u64>, Result<bool, u64>) = (Some(79), Ok(true));
+        println!("{:?}", a.encode());
+
+        let a: (Option<u64>, Result<bool, u64>) = (None, Err(44));
+        println!("{:?}", a.encode());
+    }
 }
