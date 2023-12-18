@@ -56,9 +56,11 @@ func (l *lexer) Lex(lval *yySymType) int {
 	switch lexeme {
 	case "enum":
 		return ENUM
-	case "{", "}", "(", ")":
+	case "{", "}", "(", ")", "<", ">", ",":
 		return int(rune(lexeme[0]))
-	case "uint64", "bool":
+	case "Option", "Result",
+		"int32", "uint32", "int64", "uint64",
+		"int16", "uint16", "bool":
 		lval.sval = lexeme
 		return TYPE
 	default:

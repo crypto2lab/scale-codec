@@ -14,6 +14,7 @@ mod tests {
     #[derive(DervieEncode, Decode, Debug)]
     enum ToTest {
         Int(u64),
+        Bool(bool),
         Other(Option<bool>),
         Another(Result<u64, u64>),
     }
@@ -72,14 +73,18 @@ mod tests {
         let a: ToTest = ToTest::Int(32);
         println!("{:?}", a.encode());
 
+        let a: ToTest = ToTest::Bool(true);
+        println!("{:?}", a.encode());
+
         let a: ToTest = ToTest::Other(Some(true));
         println!("{:?}", a.encode());
 
         let a: ToTest = ToTest::Another(Ok(889));
         println!("{:?}", a.encode());
 
-        let mut b: Vec<u8> = vec![2, 0, 121, 3, 0, 0, 0, 0, 0, 0];
-        let res = ToTest::decode::<Vec<u8>>(b.as_mut()).unwrap();
+        let binding = vec![2, 0, 121, 3, 0, 0, 0, 0, 0, 0];
+        let mut b: &[u8] = binding.as_slice();
+        let res = ToTest::decode(&mut b).unwrap();
 
         println!("{:?}", res);
     }

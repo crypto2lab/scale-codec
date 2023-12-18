@@ -25,6 +25,10 @@ var Enums []Enum
 
 %%
 
+Enums: /* empty */ {
+    Enums = make([]Enum, 0)
+} | Enums Enum
+
 Enum: ENUM IDENTIFIER "{" EnumFields "}" {
     $$.enum = Enum{Name: $2.sval, Variants: $4.enumFields}
     Enums = append(Enums, $$.enum)
@@ -37,8 +41,36 @@ EnumFields: /* empty */ {
         $$.enumFields = append($1.enumFields, $2.enumField)
     };
 
-EnumField: IDENTIFIER "(" TYPE ")" {
+EnumField: IDENTIFIER "(" ComplexType ")" {
     $$.enumField = EnumField{Name: $1.sval, Type: $3.sval}
 };
+
+
+ComplexType: TYPE
+    | OptionWithType
+    | OptionWithIdentifier
+    | Result ;
+
+
+OptionWithType: TYPE "<" TYPE ">" {
+    $$.sval = $1.sval + "<" + $3.sval + ">"
+} ;
+
+OptionWithIdentifier: TYPE "<" IDENTIFIER ">" {
+    $$.sval = $1.sval + "<" + $3.sval + ">"
+} ;
+
+Result: TYPE "<" TYPE "," TYPE ">" {
+        $$.sval = $1.sval + "<" + $3.sval + "," + $5.sval + ">"
+    } 
+    | TYPE "<" IDENTIFIER "," TYPE ">" {
+        $$.sval = $1.sval + "<" + $3.sval + "," + $5.sval + ">"
+    } 
+    | TYPE "<" TYPE "," IDENTIFIER ">" {
+        $$.sval = $1.sval + "<" + $3.sval + "," + $5.sval + ">"
+    } 
+    | TYPE "<" IDENTIFIER "," IDENTIFIER ">" {
+        $$.sval = $1.sval + "<" + $3.sval + "," + $5.sval + ">"
+    } ;
 
 %%

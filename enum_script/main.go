@@ -13,11 +13,11 @@ import (
 )
 
 const defaultPackage = "main"
-const OutputExt = ".go"
-const InputExt = ".scale"
+const outputExt = ".go"
+const inputExt = ".scale"
 
 func isScaleFile(filename string) bool {
-	return filepath.Ext(filename) == InputExt
+	return filepath.Ext(filename) == inputExt
 }
 
 func removeExtension(filename string) string {
@@ -56,14 +56,12 @@ func main() {
 
 	fmt.Printf("Parsing %v file\n", finfo.Name())
 	result := scale_codec.ParseEnum(finfo.Name(), bytes.NewReader(contents))
-	fmt.Println(result)
-
-	for _, e := range scale_codec.Enums {
-		fmt.Println(e)
+	if result != 0 {
+		log.Fatalf("Error: failed to parse %s file", finfo.Name())
 	}
 
 	generatedEnums := parseEnumsDefinition(outputPackage, scale_codec.Enums)
-	outputFile := strings.Join([]string{removeExtension(finfo.Name()), OutputExt}, "")
+	outputFile := strings.Join([]string{removeExtension(finfo.Name()), outputExt}, "")
 	err = os.WriteFile(outputFile, []byte(generatedEnums), os.ModePerm)
 	if err != nil {
 		log.Fatalf("Error: %v", err)

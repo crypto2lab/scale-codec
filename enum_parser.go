@@ -34,6 +34,9 @@ var yyToknames = [...]string{
 	"\"}\"",
 	"\"(\"",
 	"\")\"",
+	"\"<\"",
+	"\">\"",
+	"\",\"",
 }
 
 var yyStatenames = [...]string{}
@@ -50,38 +53,48 @@ var yyExca = [...]int8{
 
 const yyPrivate = 57344
 
-const yyLast = 11
+const yyLast = 31
 
 var yyAct = [...]int8{
-	11, 9, 8, 4, 10, 6, 3, 2, 7, 5,
+	22, 23, 20, 21, 31, 30, 29, 28, 17, 16,
+	10, 9, 27, 26, 7, 25, 24, 19, 18, 4,
+	5, 12, 3, 15, 14, 13, 11, 8, 6, 2,
 	1,
 }
 
 var yyPact = [...]int16{
-	3, -1000, 1, -4, -1000, -3, -1000, -1000, -8, -2,
-	-10, -1000,
+	-1000, 18, -1000, 14, 13, -1000, 6, -1000, -1000, 1,
+	15, -1, -3, -1000, -1000, -1000, -1000, 12, -10, -12,
+	-1000, 10, -1000, 7, -5, -6, -7, -8, -1000, -1000,
+	-1000, -1000,
 }
 
 var yyPgo = [...]int8{
-	0, 10, 9, 8,
+	0, 30, 29, 28, 27, 26, 25, 24, 23,
 }
 
 var yyR1 = [...]int8{
-	0, 1, 2, 2, 3,
+	0, 1, 1, 2, 3, 3, 4, 5, 5, 5,
+	5, 6, 7, 8, 8, 8, 8,
 }
 
 var yyR2 = [...]int8{
-	0, 5, 0, 2, 4,
+	0, 0, 2, 5, 0, 2, 4, 1, 1, 1,
+	1, 4, 4, 6, 6, 6, 6,
 }
 
 var yyChk = [...]int16{
-	-1000, -1, 4, 5, 7, -2, 8, -3, 5, 9,
-	6, 10,
+	-1000, -1, -2, 4, 5, 7, -3, 8, -4, 5,
+	9, -5, 6, -6, -7, -8, 10, 11, 6, 5,
+	12, 13, 12, 13, 6, 5, 6, 5, 12, 12,
+	12, 12,
 }
 
 var yyDef = [...]int8{
-	0, -2, 0, 0, 2, 0, 1, 3, 0, 0,
-	0, 4,
+	1, -2, 2, 0, 0, 4, 0, 3, 5, 0,
+	0, 0, 7, 8, 9, 10, 6, 0, 0, 0,
+	11, 0, 12, 0, 0, 0, 0, 0, 13, 15,
+	14, 16,
 }
 
 var yyTok1 = [...]int8{
@@ -89,9 +102,9 @@ var yyTok1 = [...]int8{
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-	9, 10, 3, 3, 3, 3, 3, 3, 3, 3,
+	9, 10, 3, 3, 13, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+	11, 3, 12, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
@@ -444,26 +457,61 @@ yydefault:
 	switch yynt {
 
 	case 1:
+		yyDollar = yyS[yypt-0 : yypt+1]
+		{
+			Enums = make([]Enum, 0)
+		}
+	case 3:
 		yyDollar = yyS[yypt-5 : yypt+1]
 		{
 			yyVAL.enum = Enum{Name: yyDollar[2].sval, Variants: yyDollar[4].enumFields}
 			Enums = append(Enums, yyVAL.enum)
 			fmt.Printf("Parsed enum: %s with fields: %+v\n", yyDollar[2].sval, Enums)
 		}
-	case 2:
+	case 4:
 		yyDollar = yyS[yypt-0 : yypt+1]
 		{
 			yyVAL.enumFields = nil // Initialize as an empty slice
 		}
-	case 3:
+	case 5:
 		yyDollar = yyS[yypt-2 : yypt+1]
 		{
 			yyVAL.enumFields = append(yyDollar[1].enumFields, yyDollar[2].enumField)
 		}
-	case 4:
+	case 6:
 		yyDollar = yyS[yypt-4 : yypt+1]
 		{
 			yyVAL.enumField = EnumField{Name: yyDollar[1].sval, Type: yyDollar[3].sval}
+		}
+	case 11:
+		yyDollar = yyS[yypt-4 : yypt+1]
+		{
+			yyVAL.sval = yyDollar[1].sval + "<" + yyDollar[3].sval + ">"
+		}
+	case 12:
+		yyDollar = yyS[yypt-4 : yypt+1]
+		{
+			yyVAL.sval = yyDollar[1].sval + "<" + yyDollar[3].sval + ">"
+		}
+	case 13:
+		yyDollar = yyS[yypt-6 : yypt+1]
+		{
+			yyVAL.sval = yyDollar[1].sval + "<" + yyDollar[3].sval + "," + yyDollar[5].sval + ">"
+		}
+	case 14:
+		yyDollar = yyS[yypt-6 : yypt+1]
+		{
+			yyVAL.sval = yyDollar[1].sval + "<" + yyDollar[3].sval + "," + yyDollar[5].sval + ">"
+		}
+	case 15:
+		yyDollar = yyS[yypt-6 : yypt+1]
+		{
+			yyVAL.sval = yyDollar[1].sval + "<" + yyDollar[3].sval + "," + yyDollar[5].sval + ">"
+		}
+	case 16:
+		yyDollar = yyS[yypt-6 : yypt+1]
+		{
+			yyVAL.sval = yyDollar[1].sval + "<" + yyDollar[3].sval + "," + yyDollar[5].sval + ">"
 		}
 	}
 	goto yystack /* stack new state and value */
