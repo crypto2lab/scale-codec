@@ -23,6 +23,11 @@ func TestEnumParser(t *testing.T) {
 		D(Result<Nested, uint64>)
 		E(Result<Nested, Nested>)
 		F(Result<uint64, Nested>)
+		G((uint64, bool))
+		H(Option<(uint64, bool)>)
+		J(Result<(uint64, bool), bool>)
+		K((Option<bool>, Result<bool, bool>))
+		L(Result<Option<(uint64, bool)>, uint64>)
     }`
 
 	expectedEnum := []Enum{
@@ -70,7 +75,28 @@ func TestEnumParser(t *testing.T) {
 					Name: "F",
 					Type: "Result<uint64,Nested>",
 				},
-			}},
+				{
+					Name: "G",
+					Type: "Tuple<uint64,bool>",
+				},
+				{
+					Name: "H",
+					Type: "Option<Tuple<uint64,bool>>",
+				},
+				{
+					Name: "J",
+					Type: "Result<Tuple<uint64,bool>,bool>",
+				},
+				{
+					Name: "K",
+					Type: "Tuple<Option<bool>,Result<bool,bool>>",
+				},
+				{
+					Name: "L",
+					Type: "Result<Option<Tuple<uint64,bool>>,uint64>",
+				},
+			},
+		},
 	}
 
 	result := ParseEnum("", strings.NewReader(input))

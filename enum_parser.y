@@ -47,26 +47,34 @@ EnumField: IDENTIFIER "(" ComplexType ")" {
 
 
 ComplexType: TYPE
-    | OptionWithType
-    | OptionWithIdentifier
+    | Tuple
+    | Option
     | Result ;
 
 
-OptionWithType: TYPE "<" TYPE ">" {
+Tuple: "(" TypeList ")" {
+    $$.sval = "Tuple<" + $2.sval + ">"
+};
+
+TypeList: ComplexType {
+    $$.sval = $1.sval
+} | TypeList "," ComplexType {
+    $$.sval += "," + $3.sval
+} ;
+
+Option: TYPE "<" ComplexType ">" {
+    $$.sval = $1.sval + "<" + $3.sval + ">"
+} | TYPE "<" IDENTIFIER ">" {
     $$.sval = $1.sval + "<" + $3.sval + ">"
 } ;
 
-OptionWithIdentifier: TYPE "<" IDENTIFIER ">" {
-    $$.sval = $1.sval + "<" + $3.sval + ">"
-} ;
-
-Result: TYPE "<" TYPE "," TYPE ">" {
+Result: TYPE "<" ComplexType "," ComplexType ">" {
         $$.sval = $1.sval + "<" + $3.sval + "," + $5.sval + ">"
     } 
-    | TYPE "<" IDENTIFIER "," TYPE ">" {
+    | TYPE "<" IDENTIFIER "," ComplexType ">" {
         $$.sval = $1.sval + "<" + $3.sval + "," + $5.sval + ">"
     } 
-    | TYPE "<" TYPE "," IDENTIFIER ">" {
+    | TYPE "<" ComplexType "," IDENTIFIER ">" {
         $$.sval = $1.sval + "<" + $3.sval + "," + $5.sval + ">"
     } 
     | TYPE "<" IDENTIFIER "," IDENTIFIER ">" {

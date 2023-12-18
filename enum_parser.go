@@ -34,9 +34,9 @@ var yyToknames = [...]string{
 	"\"}\"",
 	"\"(\"",
 	"\")\"",
+	"\",\"",
 	"\"<\"",
 	"\">\"",
-	"\",\"",
 }
 
 var yyStatenames = [...]string{}
@@ -53,48 +53,49 @@ var yyExca = [...]int8{
 
 const yyPrivate = 57344
 
-const yyLast = 31
+const yyLast = 43
 
 var yyAct = [...]int8{
-	22, 23, 20, 21, 31, 30, 29, 28, 17, 16,
-	10, 9, 27, 26, 7, 25, 24, 19, 18, 4,
-	5, 12, 3, 15, 14, 13, 11, 8, 6, 2,
-	1,
+	11, 28, 26, 27, 25, 37, 36, 35, 34, 23,
+	24, 17, 18, 12, 33, 12, 16, 20, 16, 21,
+	31, 12, 22, 12, 16, 29, 16, 30, 10, 32,
+	9, 5, 4, 7, 3, 19, 15, 14, 13, 8,
+	6, 2, 1,
 }
 
 var yyPact = [...]int16{
-	-1000, 18, -1000, 14, 13, -1000, 6, -1000, -1000, 1,
-	15, -1, -3, -1000, -1000, -1000, -1000, 12, -10, -12,
-	-1000, 10, -1000, 7, -5, -6, -7, -8, -1000, -1000,
-	-1000, -1000,
+	-1000, 30, -1000, 27, 24, -1000, 25, -1000, -1000, 19,
+	7, 1, 0, -1000, -1000, -1000, 7, -1000, 17, -1,
+	-1000, -9, -10, -1000, 7, -1000, 15, -1000, 9, -1000,
+	-5, -6, -7, -8, -1000, -1000, -1000, -1000,
 }
 
 var yyPgo = [...]int8{
-	0, 30, 29, 28, 27, 26, 25, 24, 23,
+	0, 42, 41, 40, 39, 0, 38, 37, 36, 35,
 }
 
 var yyR1 = [...]int8{
 	0, 1, 1, 2, 3, 3, 4, 5, 5, 5,
-	5, 6, 7, 8, 8, 8, 8,
+	5, 6, 9, 9, 7, 7, 8, 8, 8, 8,
 }
 
 var yyR2 = [...]int8{
 	0, 0, 2, 5, 0, 2, 4, 1, 1, 1,
-	1, 4, 4, 6, 6, 6, 6,
+	1, 3, 1, 3, 4, 4, 6, 6, 6, 6,
 }
 
 var yyChk = [...]int16{
 	-1000, -1, -2, 4, 5, 7, -3, 8, -4, 5,
-	9, -5, 6, -6, -7, -8, 10, 11, 6, 5,
-	12, 13, 12, 13, 6, 5, 6, 5, 12, 12,
-	12, 12,
+	9, -5, 6, -6, -7, -8, 9, 10, 12, -9,
+	-5, -5, 5, 10, 11, 13, 11, 13, 11, -5,
+	-5, 5, -5, 5, 13, 13, 13, 13,
 }
 
 var yyDef = [...]int8{
 	1, -2, 2, 0, 0, 4, 0, 3, 5, 0,
-	0, 0, 7, 8, 9, 10, 6, 0, 0, 0,
-	11, 0, 12, 0, 0, 0, 0, 0, 13, 15,
-	14, 16,
+	0, 0, 7, 8, 9, 10, 0, 6, 0, 0,
+	12, 0, 0, 11, 0, 14, 0, 15, 0, 13,
+	0, 0, 0, 0, 16, 18, 17, 19,
 }
 
 var yyTok1 = [...]int8{
@@ -102,9 +103,9 @@ var yyTok1 = [...]int8{
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-	9, 10, 3, 3, 13, 3, 3, 3, 3, 3,
+	9, 10, 3, 3, 11, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-	11, 3, 12, 3, 3, 3, 3, 3, 3, 3,
+	12, 3, 13, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
@@ -484,31 +485,46 @@ yydefault:
 			yyVAL.enumField = EnumField{Name: yyDollar[1].sval, Type: yyDollar[3].sval}
 		}
 	case 11:
-		yyDollar = yyS[yypt-4 : yypt+1]
+		yyDollar = yyS[yypt-3 : yypt+1]
 		{
-			yyVAL.sval = yyDollar[1].sval + "<" + yyDollar[3].sval + ">"
+			yyVAL.sval = "Tuple<" + yyDollar[2].sval + ">"
 		}
 	case 12:
+		yyDollar = yyS[yypt-1 : yypt+1]
+		{
+			yyVAL.sval = yyDollar[1].sval
+		}
+	case 13:
+		yyDollar = yyS[yypt-3 : yypt+1]
+		{
+			yyVAL.sval += "," + yyDollar[3].sval
+		}
+	case 14:
 		yyDollar = yyS[yypt-4 : yypt+1]
 		{
 			yyVAL.sval = yyDollar[1].sval + "<" + yyDollar[3].sval + ">"
 		}
-	case 13:
-		yyDollar = yyS[yypt-6 : yypt+1]
-		{
-			yyVAL.sval = yyDollar[1].sval + "<" + yyDollar[3].sval + "," + yyDollar[5].sval + ">"
-		}
-	case 14:
-		yyDollar = yyS[yypt-6 : yypt+1]
-		{
-			yyVAL.sval = yyDollar[1].sval + "<" + yyDollar[3].sval + "," + yyDollar[5].sval + ">"
-		}
 	case 15:
-		yyDollar = yyS[yypt-6 : yypt+1]
+		yyDollar = yyS[yypt-4 : yypt+1]
 		{
-			yyVAL.sval = yyDollar[1].sval + "<" + yyDollar[3].sval + "," + yyDollar[5].sval + ">"
+			yyVAL.sval = yyDollar[1].sval + "<" + yyDollar[3].sval + ">"
 		}
 	case 16:
+		yyDollar = yyS[yypt-6 : yypt+1]
+		{
+			yyVAL.sval = yyDollar[1].sval + "<" + yyDollar[3].sval + "," + yyDollar[5].sval + ">"
+		}
+	case 17:
+		yyDollar = yyS[yypt-6 : yypt+1]
+		{
+			yyVAL.sval = yyDollar[1].sval + "<" + yyDollar[3].sval + "," + yyDollar[5].sval + ">"
+		}
+	case 18:
+		yyDollar = yyS[yypt-6 : yypt+1]
+		{
+			yyVAL.sval = yyDollar[1].sval + "<" + yyDollar[3].sval + "," + yyDollar[5].sval + ">"
+		}
+	case 19:
 		yyDollar = yyS[yypt-6 : yypt+1]
 		{
 			yyVAL.sval = yyDollar[1].sval + "<" + yyDollar[3].sval + "," + yyDollar[5].sval + ">"
