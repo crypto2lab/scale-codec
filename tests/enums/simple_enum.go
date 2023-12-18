@@ -25,7 +25,7 @@ func UnmarhalMyScaleEncodedEnum(reader io.Reader) (MyScaleEncodedEnum, error) {
 	}
 
 	switch enumTag[0] {
-	
+
 	case IntIndex:
 		unmarshaler := NewInt()
 		err := unmarshaler.UnmarshalSCALE(reader)
@@ -33,7 +33,7 @@ func UnmarhalMyScaleEncodedEnum(reader io.Reader) (MyScaleEncodedEnum, error) {
 			return nil, err
 		}
 		return unmarshaler, err
-	
+
 	case BoolIndex:
 		unmarshaler := NewBool()
 		err := unmarshaler.UnmarshalSCALE(reader)
@@ -41,12 +41,11 @@ func UnmarhalMyScaleEncodedEnum(reader io.Reader) (MyScaleEncodedEnum, error) {
 			return nil, err
 		}
 		return unmarshaler, err
-	
+
 	default:
 		return nil, fmt.Errorf("unexpected enum tag: %v", enumTag[0])
 	}
 }
-
 
 var IntIndex byte = 0
 
@@ -77,6 +76,7 @@ func (i Int) MarshalSCALE() ([]byte, error) {
 func (i *Int) UnmarshalSCALE(reader io.Reader) error {
 	return i.Inner.UnmarshalSCALE(reader)
 }
+
 var BoolIndex byte = 1
 
 var _ MyScaleEncodedEnum = (*Bool)(nil)
