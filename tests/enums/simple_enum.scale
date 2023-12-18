@@ -1,6 +1,4 @@
 enum MyScaleEncodedEnum {
     Int(uint64)
     Bool(bool)
-    Other(Option<bool>)
-    Another(Result<uint64, uint64>)
 }
