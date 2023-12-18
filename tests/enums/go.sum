@@ -1,0 +1,4 @@
+github.com/crypto2lab/scale-codec v0.0.0-20231218134511-d9adae19f0f9 h1:PBIty9bpRCCQOfVSAO8Oo5y1WYgxbJfbP80g2y/Mx+8=
+github.com/crypto2lab/scale-codec v0.0.0-20231218134511-d9adae19f0f9/go.mod h1:BECBL19e7M0yt8zALZ4O3b7d/f7YO4eP8LHRlTAcY+Q=
+golang.org/x/exp v0.0.0-20231206192017-f3f8817b8deb h1:c0vyKkb6yr3KR7jEfJaOSv4lG7xPkbN6r52aJz1d8a8=
+golang.org/x/exp v0.0.0-20231206192017-f3f8817b8deb/go.mod h1:iRJReGqOEeBhDZGkGbynYwcHlctCvnjTYIamk7uXpHI=

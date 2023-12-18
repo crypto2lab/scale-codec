@@ -5,12 +5,17 @@ import (
     "fmt"
 )
 
+type Enum struct {
+    Name string
+    Variants []EnumField
+}
+
 type EnumField struct {
     Name string
     Type string
 }
 
-var enums []EnumField
+var Enums []Enum
 
 %}
 
@@ -21,14 +26,19 @@ var enums []EnumField
 %%
 
 Enum: ENUM IDENTIFIER "{" EnumFields "}" {
-    fmt.Printf("Parsed enum: %s with fields: %+v\n", $2.sval, enums)
+    $$.enum = Enum{Name: $2.sval, Variants: $4.enumFields}
+    Enums = append(Enums, $$.enum)
+    fmt.Printf("Parsed enum: %s with fields: %+v\n", $2.sval, Enums)
 };
 
-EnumFields: /* empty */ 
-    | EnumFields EnumField ;
+EnumFields: /* empty */ {
+        $$.enumFields = nil // Initialize as an empty slice
+    } | EnumFields EnumField {
+        $$.enumFields = append($1.enumFields, $2.enumField)
+    };
 
 EnumField: IDENTIFIER "(" TYPE ")" {
-    enums = append(enums, EnumField{Name: $1.sval, Type: $3.sval})
+    $$.enumField = EnumField{Name: $1.sval, Type: $3.sval}
 };
 
 %%

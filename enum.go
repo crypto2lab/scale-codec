@@ -8,14 +8,24 @@ import (
 
 //go:generate goyacc -l -o enum_parser.go enum_parser.y
 
+var ErrWrongEnumTag = errors.New("wrong enum tag")
+
 type Enumerable interface {
 	Encodable
-	Index() uint
+	Index() byte
 }
 
 type yySymType struct {
-	sval string
-	yys  int
+	sval       string
+	enum       Enum
+	enumField  EnumField
+	enumFields []EnumField
+	yys        int
+}
+
+func ParseEnum(filename string, src io.Reader) int {
+	lexer := newLexer(filename, src)
+	return yyParse(lexer)
 }
 
 type lexer struct {

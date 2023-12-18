@@ -6,10 +6,12 @@ fn main() {
 
 #[cfg(test)]
 mod tests {
+    use parity_scale_codec::Decode;
+
     use super::parity_scale_codec::Encode;
     use super::parity_scale_codec::Encode as DervieEncode;
 
-    #[derive(DervieEncode)]
+    #[derive(DervieEncode, Decode, Debug)]
     enum ToTest {
         Int(u64),
         Other(Option<bool>),
@@ -75,5 +77,10 @@ mod tests {
 
         let a: ToTest = ToTest::Another(Ok(889));
         println!("{:?}", a.encode());
+
+        let mut b: Vec<u8> = vec![2, 0, 121, 3, 0, 0, 0, 0, 0, 0];
+        let res = ToTest::decode::<Vec<u8>>(b.as_mut()).unwrap();
+
+        println!("{:?}", res);
     }
 }

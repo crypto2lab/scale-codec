@@ -1,0 +1,4 @@
+enum MyScaleEncodedEnum {
+    Int(uint64)
+    Bool(bool)
+}

@@ -7,12 +7,17 @@ import (
 	"fmt"
 )
 
+type Enum struct {
+	Name     string
+	Variants []EnumField
+}
+
 type EnumField struct {
 	Name string
 	Type string
 }
 
-var enums []EnumField
+var Enums []Enum
 
 const ENUM = 57346
 const IDENTIFIER = 57347
@@ -441,12 +446,24 @@ yydefault:
 	case 1:
 		yyDollar = yyS[yypt-5 : yypt+1]
 		{
-			fmt.Printf("Parsed enum: %s with fields: %+v\n", yyDollar[2].sval, enums)
+			yyVAL.enum = Enum{Name: yyDollar[2].sval, Variants: yyDollar[4].enumFields}
+			Enums = append(Enums, yyVAL.enum)
+			fmt.Printf("Parsed enum: %s with fields: %+v\n", yyDollar[2].sval, Enums)
+		}
+	case 2:
+		yyDollar = yyS[yypt-0 : yypt+1]
+		{
+			yyVAL.enumFields = nil // Initialize as an empty slice
+		}
+	case 3:
+		yyDollar = yyS[yypt-2 : yypt+1]
+		{
+			yyVAL.enumFields = append(yyDollar[1].enumFields, yyDollar[2].enumField)
 		}
 	case 4:
 		yyDollar = yyS[yypt-4 : yypt+1]
 		{
-			enums = append(enums, EnumField{Name: yyDollar[1].sval, Type: yyDollar[3].sval})
+			yyVAL.enumField = EnumField{Name: yyDollar[1].sval, Type: yyDollar[3].sval}
 		}
 	}
 	goto yystack /* stack new state and value */
