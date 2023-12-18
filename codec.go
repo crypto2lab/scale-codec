@@ -31,5 +31,3 @@ type Vector[T Encodable] struct {
 type String struct {
 	inner string
 }
-
-type Enum struct{}

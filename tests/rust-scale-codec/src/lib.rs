@@ -7,6 +7,14 @@ fn main() {
 #[cfg(test)]
 mod tests {
     use super::parity_scale_codec::Encode;
+    use super::parity_scale_codec::Encode as DervieEncode;
+
+    #[derive(DervieEncode)]
+    enum ToTest {
+        Int(u64),
+        Other(Option<bool>),
+        Another(Result<u64, u64>),
+    }
 
     #[test]
     fn scale_encoded_u128() {
@@ -54,6 +62,18 @@ mod tests {
         println!("{:?}", a.encode());
 
         let a: (Option<u64>, Result<bool, u64>) = (None, Err(44));
+        println!("{:?}", a.encode());
+    }
+
+    #[test]
+    fn scale_encode_enum() {
+        let a: ToTest = ToTest::Int(32);
+        println!("{:?}", a.encode());
+
+        let a: ToTest = ToTest::Other(Some(true));
+        println!("{:?}", a.encode());
+
+        let a: ToTest = ToTest::Another(Ok(889));
         println!("{:?}", a.encode());
     }
 }
