@@ -41,7 +41,9 @@ EnumFields: /* empty */ {
         $$.enumFields = append($1.enumFields, $2.enumField)
     };
 
-EnumField: IDENTIFIER "(" ComplexType ")" {
+EnumField: IDENTIFIER {
+    $$.enumField = EnumField{Name: $1.sval, Type: ""}
+} | IDENTIFIER "(" ComplexType ")" {
     $$.enumField = EnumField{Name: $1.sval, Type: $3.sval}
 };
 

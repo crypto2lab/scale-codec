@@ -75,13 +75,15 @@ var yyPgo = [...]int8{
 }
 
 var yyR1 = [...]int8{
-	0, 1, 1, 2, 3, 3, 4, 5, 5, 5,
-	5, 6, 9, 9, 7, 7, 8, 8, 8, 8,
+	0, 1, 1, 2, 3, 3, 4, 4, 5, 5,
+	5, 5, 6, 9, 9, 7, 7, 8, 8, 8,
+	8,
 }
 
 var yyR2 = [...]int8{
-	0, 0, 2, 5, 0, 2, 4, 1, 1, 1,
-	1, 3, 1, 3, 4, 4, 6, 6, 6, 6,
+	0, 0, 2, 5, 0, 2, 1, 4, 1, 1,
+	1, 1, 3, 1, 3, 4, 4, 6, 6, 6,
+	6,
 }
 
 var yyChk = [...]int16{
@@ -92,10 +94,10 @@ var yyChk = [...]int16{
 }
 
 var yyDef = [...]int8{
-	1, -2, 2, 0, 0, 4, 0, 3, 5, 0,
-	0, 0, 7, 8, 9, 10, 0, 6, 0, 0,
-	12, 0, 0, 11, 0, 14, 0, 15, 0, 13,
-	0, 0, 0, 0, 16, 18, 17, 19,
+	1, -2, 2, 0, 0, 4, 0, 3, 5, 6,
+	0, 0, 8, 9, 10, 11, 0, 7, 0, 0,
+	13, 0, 0, 12, 0, 15, 0, 16, 0, 14,
+	0, 0, 0, 0, 17, 19, 18, 20,
 }
 
 var yyTok1 = [...]int8{
@@ -480,29 +482,29 @@ yydefault:
 			yyVAL.enumFields = append(yyDollar[1].enumFields, yyDollar[2].enumField)
 		}
 	case 6:
+		yyDollar = yyS[yypt-1 : yypt+1]
+		{
+			yyVAL.enumField = EnumField{Name: yyDollar[1].sval, Type: ""}
+		}
+	case 7:
 		yyDollar = yyS[yypt-4 : yypt+1]
 		{
 			yyVAL.enumField = EnumField{Name: yyDollar[1].sval, Type: yyDollar[3].sval}
 		}
-	case 11:
+	case 12:
 		yyDollar = yyS[yypt-3 : yypt+1]
 		{
 			yyVAL.sval = "Tuple<" + yyDollar[2].sval + ">"
 		}
-	case 12:
+	case 13:
 		yyDollar = yyS[yypt-1 : yypt+1]
 		{
 			yyVAL.sval = yyDollar[1].sval
 		}
-	case 13:
+	case 14:
 		yyDollar = yyS[yypt-3 : yypt+1]
 		{
 			yyVAL.sval += "," + yyDollar[3].sval
-		}
-	case 14:
-		yyDollar = yyS[yypt-4 : yypt+1]
-		{
-			yyVAL.sval = yyDollar[1].sval + "<" + yyDollar[3].sval + ">"
 		}
 	case 15:
 		yyDollar = yyS[yypt-4 : yypt+1]
@@ -510,9 +512,9 @@ yydefault:
 			yyVAL.sval = yyDollar[1].sval + "<" + yyDollar[3].sval + ">"
 		}
 	case 16:
-		yyDollar = yyS[yypt-6 : yypt+1]
+		yyDollar = yyS[yypt-4 : yypt+1]
 		{
-			yyVAL.sval = yyDollar[1].sval + "<" + yyDollar[3].sval + "," + yyDollar[5].sval + ">"
+			yyVAL.sval = yyDollar[1].sval + "<" + yyDollar[3].sval + ">"
 		}
 	case 17:
 		yyDollar = yyS[yypt-6 : yypt+1]
@@ -525,6 +527,11 @@ yydefault:
 			yyVAL.sval = yyDollar[1].sval + "<" + yyDollar[3].sval + "," + yyDollar[5].sval + ">"
 		}
 	case 19:
+		yyDollar = yyS[yypt-6 : yypt+1]
+		{
+			yyVAL.sval = yyDollar[1].sval + "<" + yyDollar[3].sval + "," + yyDollar[5].sval + ">"
+		}
+	case 20:
 		yyDollar = yyS[yypt-6 : yypt+1]
 		{
 			yyVAL.sval = yyDollar[1].sval + "<" + yyDollar[3].sval + "," + yyDollar[5].sval + ">"

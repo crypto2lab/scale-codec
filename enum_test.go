@@ -15,6 +15,7 @@ func TestEnumParser(t *testing.T) {
 	}
 
 	enum MyEnum {
+		Single
         Int(uint64)
         Bool(bool)
 		A(Option<bool>)
@@ -43,6 +44,10 @@ func TestEnumParser(t *testing.T) {
 		{
 			Name: "MyEnum",
 			Variants: []EnumField{
+				{
+					Name: "Single",
+					Type: "",
+				},
 				{
 					Name: "Int",
 					Type: "uint64",
