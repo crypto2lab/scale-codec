@@ -13,8 +13,9 @@ type Enum struct {
 }
 
 type EnumField struct {
-	Name string
-	Type string
+	Name            string
+	Type            string
+	TypeConstructor string
 }
 
 var Enums []Enum
@@ -484,17 +485,24 @@ yydefault:
 	case 6:
 		yyDollar = yyS[yypt-1 : yypt+1]
 		{
-			yyVAL.enumField = EnumField{Name: yyDollar[1].sval, Type: ""}
+			yyVAL.enumField = EnumField{Name: yyDollar[1].sval, Type: "*scale_codec.SimpleVariant", TypeConstructor: "new(scale_codec.SimpleVariant)"}
 		}
 	case 7:
 		yyDollar = yyS[yypt-4 : yypt+1]
 		{
-			yyVAL.enumField = EnumField{Name: yyDollar[1].sval, Type: yyDollar[3].sval}
+			yyVAL.enumField = EnumField{Name: yyDollar[1].sval, Type: yyDollar[3].ttype, TypeConstructor: yyDollar[3].sval}
+		}
+	case 8:
+		yyDollar = yyS[yypt-1 : yypt+1]
+		{
+			yyVAL.sval = "new(" + yyDollar[1].sval + ")"
+			yyVAL.ttype = "*" + yyDollar[1].sval
 		}
 	case 12:
 		yyDollar = yyS[yypt-3 : yypt+1]
 		{
-			yyVAL.sval = "Tuple<" + yyDollar[2].sval + ">"
+			yyVAL.sval = "scale_codec.NewTuple(" + yyDollar[2].sval + ")"
+			yyVAL.ttype = "*scale_codec.Tuple"
 		}
 	case 13:
 		yyDollar = yyS[yypt-1 : yypt+1]
@@ -509,32 +517,38 @@ yydefault:
 	case 15:
 		yyDollar = yyS[yypt-4 : yypt+1]
 		{
-			yyVAL.sval = yyDollar[1].sval + "<" + yyDollar[3].sval + ">"
+			yyVAL.sval = "scale_codec.NewOption(" + yyDollar[3].sval + ")"
+			yyVAL.ttype = "*scale_codec.Option"
 		}
 	case 16:
 		yyDollar = yyS[yypt-4 : yypt+1]
 		{
-			yyVAL.sval = yyDollar[1].sval + "<" + yyDollar[3].sval + ">"
+			yyVAL.sval = "scale_codec.NewOption(" + yyDollar[3].sval + ")"
+			yyVAL.ttype = "*scale_codec.Option"
 		}
 	case 17:
 		yyDollar = yyS[yypt-6 : yypt+1]
 		{
-			yyVAL.sval = yyDollar[1].sval + "<" + yyDollar[3].sval + "," + yyDollar[5].sval + ">"
+			yyVAL.sval = "scale_codec.NewResult(" + yyDollar[3].sval + "," + yyDollar[5].sval + ")"
+			yyVAL.ttype = "*scale_codec.Result"
 		}
 	case 18:
 		yyDollar = yyS[yypt-6 : yypt+1]
 		{
-			yyVAL.sval = yyDollar[1].sval + "<" + yyDollar[3].sval + "," + yyDollar[5].sval + ">"
+			yyVAL.sval = "scale_codec.NewResult(" + yyDollar[3].sval + "," + yyDollar[5].sval + ")"
+			yyVAL.ttype = "*scale_codec.Result"
 		}
 	case 19:
 		yyDollar = yyS[yypt-6 : yypt+1]
 		{
-			yyVAL.sval = yyDollar[1].sval + "<" + yyDollar[3].sval + "," + yyDollar[5].sval + ">"
+			yyVAL.sval = "scale_codec.NewResult(" + yyDollar[3].sval + "," + yyDollar[5].sval + ")"
+			yyVAL.ttype = "*scale_codec.Result"
 		}
 	case 20:
 		yyDollar = yyS[yypt-6 : yypt+1]
 		{
-			yyVAL.sval = yyDollar[1].sval + "<" + yyDollar[3].sval + "," + yyDollar[5].sval + ">"
+			yyVAL.sval = "scale_codec.NewResult(" + yyDollar[3].sval + "," + yyDollar[5].sval + ")"
+			yyVAL.ttype = "*scale_codec.Result"
 		}
 	}
 	goto yystack /* stack new state and value */

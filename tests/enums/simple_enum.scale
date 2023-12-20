@@ -1,4 +1,12 @@
 enum MyScaleEncodedEnum {
+	Single
     Int(uint64)
     Bool(bool)
+	A(Option<bool>)
+	B(Result<uint64, uint64>)
+	G((uint64, bool))
+	H(Option<(uint64, bool)>)
+	J(Result<(uint64, bool), bool>)
+	K((Option<bool>, Result<bool, bool>))
+	L(Result<Option<(uint64, bool)>, uint64>)
 }

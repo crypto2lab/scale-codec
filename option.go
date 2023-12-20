@@ -8,6 +8,15 @@ import (
 
 var NoneEncoded = []byte{0x00}
 
+type OptionG[T Encodable] struct {
+	inner  T
+	isNone bool
+}
+
+func NewOptionG[T Encodable](encodable T) *OptionG[T] {
+	return &OptionG[T]{inner: encodable}
+}
+
 type Option struct {
 	inner  Encodable
 	isNone bool

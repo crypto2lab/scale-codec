@@ -36,8 +36,9 @@ func TestEnumParser(t *testing.T) {
 			Name: "Nested",
 			Variants: []EnumField{
 				{
-					Name: "Number",
-					Type: "int32",
+					Name:            "Number",
+					Type:            "*scale_codec.Integer[int32]",
+					TypeConstructor: "new(scale_codec.Integer[int32])",
 				},
 			},
 		},
@@ -45,60 +46,74 @@ func TestEnumParser(t *testing.T) {
 			Name: "MyEnum",
 			Variants: []EnumField{
 				{
-					Name: "Single",
-					Type: "",
+					Name:            "Single",
+					Type:            "*scale_codec.SimpleVariant",
+					TypeConstructor: "new(scale_codec.SimpleVariant)",
 				},
 				{
-					Name: "Int",
-					Type: "uint64",
+					Name:            "Int",
+					Type:            "*scale_codec.Integer[uint64]",
+					TypeConstructor: "new(scale_codec.Integer[uint64])",
 				},
 				{
-					Name: "Bool",
-					Type: "bool",
+					Name:            "Bool",
+					Type:            "*scale_codec.Bool",
+					TypeConstructor: "new(scale_codec.Bool)",
 				},
 				{
-					Name: "A",
-					Type: "Option<bool>",
+					Name:            "A",
+					Type:            "*scale_codec.Option",
+					TypeConstructor: "scale_codec.NewOption(new(scale_codec.Bool))",
 				},
 				{
-					Name: "B",
-					Type: "Result<uint64,uint64>",
+					Name:            "B",
+					Type:            "*scale_codec.Result",
+					TypeConstructor: "scale_codec.NewResult(new(scale_codec.Integer[uint64]),new(scale_codec.Integer[uint64]))",
 				},
 				{
-					Name: "C",
-					Type: "Option<Nested>",
+					Name:            "C",
+					Type:            "*scale_codec.Option",
+					TypeConstructor: "scale_codec.NewOption(Nested)",
 				},
 				{
-					Name: "D",
-					Type: "Result<Nested,uint64>",
+					Name:            "D",
+					Type:            "*scale_codec.Result",
+					TypeConstructor: "scale_codec.NewResult(Nested,new(scale_codec.Integer[uint64]))",
 				},
 				{
-					Name: "E",
-					Type: "Result<Nested,Nested>",
+					Name:            "E",
+					Type:            "*scale_codec.Result",
+					TypeConstructor: "scale_codec.NewResult(Nested,Nested)",
 				},
 				{
-					Name: "F",
-					Type: "Result<uint64,Nested>",
+					Name:            "F",
+					Type:            "*scale_codec.Result",
+					TypeConstructor: "scale_codec.NewResult(new(scale_codec.Integer[uint64]),Nested)",
 				},
 				{
-					Name: "G",
-					Type: "Tuple<uint64,bool>",
+					Name:            "G",
+					Type:            "*scale_codec.Tuple",
+					TypeConstructor: "scale_codec.NewTuple(new(scale_codec.Integer[uint64]),new(scale_codec.Bool))",
 				},
 				{
-					Name: "H",
-					Type: "Option<Tuple<uint64,bool>>",
+					Name:            "H",
+					Type:            "*scale_codec.Option",
+					TypeConstructor: "scale_codec.NewOption(scale_codec.NewTuple(new(scale_codec.Integer[uint64]),new(scale_codec.Bool)))",
 				},
 				{
-					Name: "J",
-					Type: "Result<Tuple<uint64,bool>,bool>",
+					Name:            "J",
+					Type:            "*scale_codec.Result",
+					TypeConstructor: "scale_codec.NewResult(scale_codec.NewTuple(new(scale_codec.Integer[uint64]),new(scale_codec.Bool)),new(scale_codec.Bool))",
 				},
 				{
-					Name: "K",
-					Type: "Tuple<Option<bool>,Result<bool,bool>>",
+					Name:            "K",
+					Type:            "*scale_codec.Tuple",
+					TypeConstructor: "scale_codec.NewTuple(scale_codec.NewOption(new(scale_codec.Bool)),scale_codec.NewResult(new(scale_codec.Bool),new(scale_codec.Bool)))",
 				},
 				{
-					Name: "L",
-					Type: "Result<Option<Tuple<uint64,bool>>,uint64>",
+					Name:            "L",
+					Type:            "*scale_codec.Result",
+					TypeConstructor: "scale_codec.NewResult(scale_codec.NewOption(scale_codec.NewTuple(new(scale_codec.Integer[uint64]),new(scale_codec.Bool))),new(scale_codec.Integer[uint64]))",
 				},
 			},
 		},
@@ -109,7 +124,17 @@ func TestEnumParser(t *testing.T) {
 		t.Fatalf("error to parse enum")
 	}
 
-	if !reflect.DeepEqual(expectedEnum, Enums) {
-		t.Fatalf("\nexpected: %v\ngot: %v", expectedEnum, Enums)
+	for i, expected := range expectedEnum {
+		actual := Enums[i]
+		if expected.Name != actual.Name {
+			t.Fatalf("\nexpected: %v\ngot: %v", expected.Name, actual.Name)
+		}
+
+		for j, variant := range expected.Variants {
+			actualVariant := actual.Variants[j]
+			if !reflect.DeepEqual(variant, actualVariant) {
+				t.Fatalf("\nexpected: %v\ngot: %v", variant, actualVariant)
+			}
+		}
 	}
 }

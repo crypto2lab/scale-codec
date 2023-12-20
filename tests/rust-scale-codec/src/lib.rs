@@ -13,10 +13,16 @@ mod tests {
 
     #[derive(DervieEncode, Decode, Debug)]
     enum ToTest {
+        Single,
         Int(u64),
         Bool(bool),
-        Other(Option<bool>),
-        Another(Result<u64, u64>),
+        A(Option<bool>),
+        B(Result<u64, u64>),
+        G((u64, bool)),
+        H(Option<(u64, bool)>),
+        J(Result<(u64, bool), bool>),
+        K((Option<bool>, Result<bool, bool>)),
+        L(Result<Option<(u64, bool)>, u64>),
     }
 
     #[test]
@@ -70,16 +76,37 @@ mod tests {
 
     #[test]
     fn scale_encode_enum() {
+        let a: ToTest = ToTest::Single;
+        println!("{:?}", a.encode());
+
         let a: ToTest = ToTest::Int(32);
         println!("{:?}", a.encode());
 
         let a: ToTest = ToTest::Bool(true);
         println!("{:?}", a.encode());
 
-        let a: ToTest = ToTest::Other(Some(true));
+        let a: ToTest = ToTest::A(Some(true));
         println!("{:?}", a.encode());
 
-        let a: ToTest = ToTest::Another(Ok(889));
+        let a: ToTest = ToTest::A(None);
+        println!("{:?}", a.encode());
+
+        let a: ToTest = ToTest::B(Ok(108));
+        println!("{:?}", a.encode());
+
+        let a: ToTest = ToTest::B(Err(90));
+        println!("{:?}", a.encode());
+
+        let a: ToTest = ToTest::G((60, false));
+        println!("{:?}", a.encode());
+
+        let a: ToTest = ToTest::H(Some((60, false)));
+        println!("{:?}", a.encode());
+
+        let a: ToTest = ToTest::J(Ok((60, false)));
+        println!("{:?}", a.encode());
+
+        let a: ToTest = ToTest::K((Some(true), Ok(false)));
         println!("{:?}", a.encode());
 
         let binding = vec![2, 0, 121, 3, 0, 0, 0, 0, 0, 0];

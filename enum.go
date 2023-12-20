@@ -2,6 +2,7 @@ package scale_codec
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"text/scanner"
 )
@@ -10,12 +11,18 @@ import (
 
 var ErrWrongEnumTag = errors.New("wrong enum tag")
 
-type Enumerable interface {
-	Encodable
-	Index() byte
+type SimpleVariant struct{}
+
+func (SimpleVariant) MarshalSCALE() ([]byte, error) {
+	return []byte{}, nil
+}
+
+func (*SimpleVariant) UnmarshalSCALE(_ io.Reader) error {
+	return nil
 }
 
 type yySymType struct {
+	ttype      string
 	sval       string
 	enum       Enum
 	enumField  EnumField
@@ -58,9 +65,14 @@ func (l *lexer) Lex(lval *yySymType) int {
 		return ENUM
 	case "{", "}", "(", ")", "<", ">", ",":
 		return int(rune(lexeme[0]))
-	case "Option", "Result",
-		"int32", "uint32", "int64", "uint64",
-		"int16", "uint16", "bool":
+	case "int8", "uint8", "int16", "uint16",
+		"int32", "uint32", "int64", "uint64":
+		lval.sval = fmt.Sprintf("scale_codec.Integer[%s]", lexeme)
+		return TYPE
+	case "bool":
+		lval.sval = "scale_codec.Bool"
+		return TYPE
+	case "Option", "Result":
 		lval.sval = lexeme
 		return TYPE
 	default:

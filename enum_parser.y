@@ -13,6 +13,7 @@ type Enum struct {
 type EnumField struct {
     Name string
     Type string
+    TypeConstructor string
 }
 
 var Enums []Enum
@@ -36,26 +37,27 @@ Enum: ENUM IDENTIFIER "{" EnumFields "}" {
 };
 
 EnumFields: /* empty */ {
-        $$.enumFields = nil // Initialize as an empty slice
-    } | EnumFields EnumField {
-        $$.enumFields = append($1.enumFields, $2.enumField)
-    };
+    $$.enumFields = nil // Initialize as an empty slice
+} | EnumFields EnumField {
+    $$.enumFields = append($1.enumFields, $2.enumField)
+};
 
 EnumField: IDENTIFIER {
-    $$.enumField = EnumField{Name: $1.sval, Type: ""}
+    $$.enumField = EnumField{Name: $1.sval, Type: "*scale_codec.SimpleVariant", TypeConstructor: "new(scale_codec.SimpleVariant)"}
 } | IDENTIFIER "(" ComplexType ")" {
-    $$.enumField = EnumField{Name: $1.sval, Type: $3.sval}
+    $$.enumField = EnumField{Name: $1.sval, Type: $3.ttype, TypeConstructor: $3.sval}
 };
 
 
-ComplexType: TYPE
-    | Tuple
-    | Option
-    | Result ;
+ComplexType: TYPE {
+    $$.sval = "new(" + $1.sval + ")"
+    $$.ttype = "*" + $1.sval
+} | Tuple | Option | Result ;
 
 
 Tuple: "(" TypeList ")" {
-    $$.sval = "Tuple<" + $2.sval + ">"
+    $$.sval = "scale_codec.NewTuple(" + $2.sval + ")"
+    $$.ttype = "*scale_codec.Tuple"
 };
 
 TypeList: ComplexType {
@@ -65,22 +67,25 @@ TypeList: ComplexType {
 } ;
 
 Option: TYPE "<" ComplexType ">" {
-    $$.sval = $1.sval + "<" + $3.sval + ">"
+    $$.sval = "scale_codec.NewOption(" + $3.sval + ")"
+    $$.ttype = "*scale_codec.Option"
 } | TYPE "<" IDENTIFIER ">" {
-    $$.sval = $1.sval + "<" + $3.sval + ">"
+    $$.sval = "scale_codec.NewOption(" + $3.sval + ")"
+    $$.ttype = "*scale_codec.Option"
 } ;
 
 Result: TYPE "<" ComplexType "," ComplexType ">" {
-        $$.sval = $1.sval + "<" + $3.sval + "," + $5.sval + ">"
-    } 
-    | TYPE "<" IDENTIFIER "," ComplexType ">" {
-        $$.sval = $1.sval + "<" + $3.sval + "," + $5.sval + ">"
-    } 
-    | TYPE "<" ComplexType "," IDENTIFIER ">" {
-        $$.sval = $1.sval + "<" + $3.sval + "," + $5.sval + ">"
-    } 
-    | TYPE "<" IDENTIFIER "," IDENTIFIER ">" {
-        $$.sval = $1.sval + "<" + $3.sval + "," + $5.sval + ">"
-    } ;
+    $$.sval = "scale_codec.NewResult(" + $3.sval + "," + $5.sval + ")"
+    $$.ttype = "*scale_codec.Result"
+} | TYPE "<" IDENTIFIER "," ComplexType ">" {
+    $$.sval = "scale_codec.NewResult(" + $3.sval + "," + $5.sval + ")"
+    $$.ttype = "*scale_codec.Result"
+} | TYPE "<" ComplexType "," IDENTIFIER ">" {
+    $$.sval = "scale_codec.NewResult(" + $3.sval + "," + $5.sval + ")"
+    $$.ttype = "*scale_codec.Result"
+} | TYPE "<" IDENTIFIER "," IDENTIFIER ">" {
+    $$.sval = "scale_codec.NewResult(" + $3.sval + "," + $5.sval + ")"
+    $$.ttype = "*scale_codec.Result"
+} ;
 
 %%
