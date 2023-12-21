@@ -16,6 +16,7 @@ type EnumField struct {
 	Name            string
 	Type            string
 	TypeConstructor string
+	UnmarshalScale  string
 }
 
 var Enums []Enum
@@ -485,12 +486,22 @@ yydefault:
 	case 6:
 		yyDollar = yyS[yypt-1 : yypt+1]
 		{
-			yyVAL.enumField = EnumField{Name: yyDollar[1].sval, Type: "*scale_codec.SimpleVariant", TypeConstructor: "new(scale_codec.SimpleVariant)"}
+			yyVAL.enumField = EnumField{
+				Name:            yyDollar[1].sval,
+				Type:            "*scale_codec.SimpleVariant",
+				TypeConstructor: "new(scale_codec.SimpleVariant)",
+				UnmarshalScale:  "",
+			}
 		}
 	case 7:
 		yyDollar = yyS[yypt-4 : yypt+1]
 		{
-			yyVAL.enumField = EnumField{Name: yyDollar[1].sval, Type: yyDollar[3].ttype, TypeConstructor: yyDollar[3].sval}
+			yyVAL.enumField = EnumField{
+				Name:            yyDollar[1].sval,
+				Type:            yyDollar[3].ttype,
+				TypeConstructor: yyDollar[3].sval,
+				UnmarshalScale:  yyDollar[3].unmarshalScale,
+			}
 		}
 	case 8:
 		yyDollar = yyS[yypt-1 : yypt+1]
@@ -523,8 +534,9 @@ yydefault:
 	case 16:
 		yyDollar = yyS[yypt-4 : yypt+1]
 		{
-			yyVAL.sval = "scale_codec.NewOption(" + yyDollar[3].sval + ")"
-			yyVAL.ttype = "*scale_codec.Option"
+			yyVAL.sval = "new(scale_codec.OptionG[" + yyDollar[3].sval + "])"
+			yyVAL.ttype = "*scale_codec.OptionG[" + yyDollar[3].sval + "]"
+			yyVAL.unmarshalScale = "return i.Inner.UnmarshalSCALE(reader, Unmarshal" + yyDollar[3].sval + ")"
 		}
 	case 17:
 		yyDollar = yyS[yypt-6 : yypt+1]

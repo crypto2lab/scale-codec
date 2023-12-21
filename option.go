@@ -13,8 +13,57 @@ type OptionG[T Encodable] struct {
 	isNone bool
 }
 
-func NewOptionG[T Encodable](encodable T) *OptionG[T] {
-	return &OptionG[T]{inner: encodable}
+func (o *OptionG[T]) MarshalSCALE() ([]byte, error) {
+	if o.isNone {
+		return NoneEncoded, nil
+	}
+
+	encodedOptionTag := []byte{0x01}
+	encodedInner, err := o.inner.MarshalSCALE()
+	if err != nil {
+		return nil, err
+	}
+
+	return bytes.Join([][]byte{encodedOptionTag, encodedInner}, nil), nil
+}
+
+func (o *OptionG[T]) UnmarshalSCALE(reader io.Reader, f func(io.Reader) (T, error)) error {
+	encodedOptionTag := make([]byte, 1)
+	n, err := reader.Read(encodedOptionTag)
+	if err != nil {
+		return err
+	}
+
+	if n != 1 {
+		return fmt.Errorf("%w: want: 1, got: %v", ErrUnexpectedReadBytes, n)
+	}
+
+	switch encodedOptionTag[0] {
+	case 0x00:
+		o.isNone = true
+		return nil
+	case 0x01:
+		innerValue, err := f(reader)
+		if err != nil {
+			return err
+		}
+
+		o.inner = innerValue
+		o.isNone = false
+		return nil
+	default:
+		return fmt.Errorf("%w: %v", ErrUnexpectedOptionTag, encodedOptionTag[0])
+	}
+}
+
+func SomeG[T Encodable](inner T) *OptionG[T] {
+	return &OptionG[T]{inner, false}
+}
+
+func NoneG[T Encodable]() *OptionG[T] {
+	return &OptionG[T]{
+		isNone: true,
+	}
 }
 
 type Option struct {

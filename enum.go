@@ -22,12 +22,13 @@ func (*SimpleVariant) UnmarshalSCALE(_ io.Reader) error {
 }
 
 type yySymType struct {
-	ttype      string
-	sval       string
-	enum       Enum
-	enumField  EnumField
-	enumFields []EnumField
-	yys        int
+	unmarshalScale string
+	ttype          string
+	sval           string
+	enum           Enum
+	enumField      EnumField
+	enumFields     []EnumField
+	yys            int
 }
 
 func ParseEnum(filename string, src io.Reader) int {

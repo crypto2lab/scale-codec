@@ -11,9 +11,10 @@ type Enum struct {
 }
 
 type EnumField struct {
-    Name string
-    Type string
+    Name            string
+    Type            string
     TypeConstructor string
+	UnmarshalScale  string
 }
 
 var Enums []Enum
@@ -43,9 +44,19 @@ EnumFields: /* empty */ {
 };
 
 EnumField: IDENTIFIER {
-    $$.enumField = EnumField{Name: $1.sval, Type: "*scale_codec.SimpleVariant", TypeConstructor: "new(scale_codec.SimpleVariant)"}
+    $$.enumField = EnumField{
+        Name: $1.sval, 
+        Type: "*scale_codec.SimpleVariant", 
+        TypeConstructor: "new(scale_codec.SimpleVariant)",
+        UnmarshalScale: "",
+    }
 } | IDENTIFIER "(" ComplexType ")" {
-    $$.enumField = EnumField{Name: $1.sval, Type: $3.ttype, TypeConstructor: $3.sval}
+    $$.enumField = EnumField{
+        Name: $1.sval, 
+        Type: $3.ttype, 
+        TypeConstructor: $3.sval,
+        UnmarshalScale: $3.unmarshalScale,
+    }
 };
 
 
@@ -70,8 +81,9 @@ Option: TYPE "<" ComplexType ">" {
     $$.sval = "scale_codec.NewOption(" + $3.sval + ")"
     $$.ttype = "*scale_codec.Option"
 } | TYPE "<" IDENTIFIER ">" {
-    $$.sval = "scale_codec.NewOption(" + $3.sval + ")"
-    $$.ttype = "*scale_codec.Option"
+    $$.sval = "new(scale_codec.OptionG[" + $3.sval + "])"
+    $$.ttype = "*scale_codec.OptionG[" + $3.sval + "]"
+    $$.unmarshalScale  = "return i.Inner.UnmarshalSCALE(reader, Unmarshal" + $3.sval + ")"
 } ;
 
 Result: TYPE "<" ComplexType "," ComplexType ">" {

@@ -72,8 +72,8 @@ func TestEnumParser(t *testing.T) {
 				},
 				{
 					Name:            "C",
-					Type:            "*scale_codec.Option",
-					TypeConstructor: "scale_codec.NewOption(Nested)",
+					Type:            "*scale_codec.OptionG[Nested]",
+					TypeConstructor: "new(scale_codec.OptionG[Nested])",
 				},
 				{
 					Name:            "D",

@@ -1,3 +1,7 @@
+enum Nested {
+	Number(uint32)
+}
+
 enum MyScaleEncodedEnum {
 	Single
     Int(uint64)
@@ -9,4 +13,5 @@ enum MyScaleEncodedEnum {
 	J(Result<(uint64, bool), bool>)
 	K((Option<bool>, Result<bool, bool>))
 	L(Result<Option<(uint64, bool)>, uint64>)
+	M(Option<Nested>)
 }

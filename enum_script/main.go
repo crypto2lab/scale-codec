@@ -136,18 +136,26 @@ func parseVariantsDefinitions(parsedEnums []scale_codec.Enum) string {
 		Name            string
 		Type            string
 		TypeConstructor string
+		UnmarshalSCALE  string
 		Index           int
 	}
 
 	variantsDefs := new(strings.Builder)
 	for _, enum := range parsedEnums {
+
 		for index, vari := range enum.Variants {
+			unmarshalScale := defaultUnmarshalSCALE
+			if strings.TrimSpace(vari.UnmarshalScale) != "" {
+				unmarshalScale = strings.TrimSpace(vari.UnmarshalScale)
+			}
+
 			value := variant{
 				EnumName:        enum.Name,
 				Name:            vari.Name,
 				Type:            vari.Type,
 				TypeConstructor: vari.TypeConstructor,
 				Index:           index,
+				UnmarshalSCALE:  unmarshalScale,
 			}
 			err := t.Execute(variantsDefs, value)
 			if err != nil {
@@ -180,7 +188,7 @@ const EnumDefinitionTemplate = `type {{ .EnumName }} interface {
 	Is{{ .EnumName }}()
 }
 
-func Unmarhal{{ .EnumName }}(reader io.Reader) ({{ .EnumName }}, error) {
+func Unmarshal{{ .EnumName }}(reader io.Reader) ({{ .EnumName }}, error) {
 	enumTag := make([]byte, 1)
 	n, err := reader.Read(enumTag)
 	if err != nil {
@@ -206,6 +214,7 @@ func Unmarhal{{ .EnumName }}(reader io.Reader) ({{ .EnumName }}, error) {
 	}
 }`
 
+const defaultUnmarshalSCALE = "return i.Inner.UnmarshalSCALE(reader)"
 const EnumVariantDefinitionTempate = `var {{ .Name }}Index byte = {{ .Index }}
 
 var _ {{ .EnumName }} = (*{{ .Name }})(nil)
@@ -233,5 +242,5 @@ func (i {{ .Name }}) MarshalSCALE() ([]byte, error) {
 }
 
 func (i *{{ .Name }}) UnmarshalSCALE(reader io.Reader) error {
-	return i.Inner.UnmarshalSCALE(reader)
+	{{ .UnmarshalSCALE }}
 }`

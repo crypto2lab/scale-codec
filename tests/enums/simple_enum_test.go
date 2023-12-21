@@ -93,6 +93,14 @@ func TestSimpleEnumMarshaler(t *testing.T) {
 				),
 			},
 		},
+		{
+			expectedBytes: []byte{10, 1, 0, 10, 0, 0, 0},
+			marshaler: &M{
+				Inner: scale_codec.SomeG[Nested](
+					&Number{Inner: &scale_codec.Integer[uint32]{10}},
+				),
+			},
+		},
 	}
 
 	for _, tt := range cases {
@@ -193,10 +201,20 @@ func TestSimpleEnumUnmarshaler(t *testing.T) {
 				),
 			},
 		},
+		{
+			inputBytes: []byte{10, 1, 0, 10, 0, 0, 0},
+			expectedVariant: &M{
+				Inner: scale_codec.SomeG[Nested](
+					&Number{
+						Inner: &scale_codec.Integer[uint32]{10},
+					},
+				),
+			},
+		},
 	}
 
 	for _, tt := range cases {
-		variant, err := UnmarhalMyScaleEncodedEnum(bytes.NewReader(tt.inputBytes))
+		variant, err := UnmarshalMyScaleEncodedEnum(bytes.NewReader(tt.inputBytes))
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}

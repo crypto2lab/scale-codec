@@ -9,12 +9,42 @@ import (
 	scale_codec "github.com/crypto2lab/scale-codec"
 )
 
+type Nested interface {
+	scale_codec.Encodable
+	IsNested()
+}
+
+func UnmarshalNested(reader io.Reader) (Nested, error) {
+	enumTag := make([]byte, 1)
+	n, err := reader.Read(enumTag)
+	if err != nil {
+		return nil, err
+	}
+
+	if n != 1 {
+		return nil, fmt.Errorf("%w: got %v", scale_codec.ErrExpectedOneByteRead, n)
+	}
+
+	switch enumTag[0] {
+	
+	case NumberIndex:
+		unmarshaler := NewNumber()
+		err := unmarshaler.UnmarshalSCALE(reader)
+		if err != nil {
+			return nil, err
+		}
+		return unmarshaler, err
+	
+	default:
+		return nil, fmt.Errorf("unexpected enum tag: %v", enumTag[0])
+	}
+}
 type MyScaleEncodedEnum interface {
 	scale_codec.Encodable
 	IsMyScaleEncodedEnum()
 }
 
-func UnmarhalMyScaleEncodedEnum(reader io.Reader) (MyScaleEncodedEnum, error) {
+func UnmarshalMyScaleEncodedEnum(reader io.Reader) (MyScaleEncodedEnum, error) {
 	enumTag := make([]byte, 1)
 	n, err := reader.Read(enumTag)
 	if err != nil {
@@ -107,12 +137,49 @@ func UnmarhalMyScaleEncodedEnum(reader io.Reader) (MyScaleEncodedEnum, error) {
 		}
 		return unmarshaler, err
 	
+	case MIndex:
+		unmarshaler := NewM()
+		err := unmarshaler.UnmarshalSCALE(reader)
+		if err != nil {
+			return nil, err
+		}
+		return unmarshaler, err
+	
 	default:
 		return nil, fmt.Errorf("unexpected enum tag: %v", enumTag[0])
 	}
 }
 
 
+var NumberIndex byte = 0
+
+var _ Nested = (*Number)(nil)
+
+type Number struct {
+	Inner *scale_codec.Integer[uint32]
+}
+
+func NewNumber() *Number {
+	return &Number{
+		Inner: new(scale_codec.Integer[uint32]),
+	}
+}
+
+func (Number) IsNested() {}
+
+func (i Number) MarshalSCALE() ([]byte, error) {
+	innerEncode, err := i.Inner.MarshalSCALE()
+	if err != nil {
+		return nil, err
+	}
+
+	idx := NumberIndex
+	return bytes.Join([][]byte{[]byte{idx}, innerEncode}, nil), nil
+}
+
+func (i *Number) UnmarshalSCALE(reader io.Reader) error {
+	return i.Inner.UnmarshalSCALE(reader)
+}
 var SingleIndex byte = 0
 
 var _ MyScaleEncodedEnum = (*Single)(nil)
@@ -402,4 +469,33 @@ func (i L) MarshalSCALE() ([]byte, error) {
 
 func (i *L) UnmarshalSCALE(reader io.Reader) error {
 	return i.Inner.UnmarshalSCALE(reader)
+}
+var MIndex byte = 10
+
+var _ MyScaleEncodedEnum = (*M)(nil)
+
+type M struct {
+	Inner *scale_codec.OptionG[Nested]
+}
+
+func NewM() *M {
+	return &M{
+		Inner: new(scale_codec.OptionG[Nested]),
+	}
+}
+
+func (M) IsMyScaleEncodedEnum() {}
+
+func (i M) MarshalSCALE() ([]byte, error) {
+	innerEncode, err := i.Inner.MarshalSCALE()
+	if err != nil {
+		return nil, err
+	}
+
+	idx := MIndex
+	return bytes.Join([][]byte{[]byte{idx}, innerEncode}, nil), nil
+}
+
+func (i *M) UnmarshalSCALE(reader io.Reader) error {
+	return i.Inner.UnmarshalSCALE(reader, UnmarshalNested)
 }

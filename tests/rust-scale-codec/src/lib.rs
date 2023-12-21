@@ -12,6 +12,11 @@ mod tests {
     use super::parity_scale_codec::Encode as DervieEncode;
 
     #[derive(DervieEncode, Decode, Debug)]
+    enum Nested {
+        SimpleN(u32),
+    }
+
+    #[derive(DervieEncode, Decode, Debug)]
     enum ToTest {
         Single,
         Int(u64),
@@ -23,6 +28,7 @@ mod tests {
         J(Result<(u64, bool), bool>),
         K((Option<bool>, Result<bool, bool>)),
         L(Result<Option<(u64, bool)>, u64>),
+        M(Option<Nested>),
     }
 
     #[test]
@@ -107,6 +113,9 @@ mod tests {
         println!("{:?}", a.encode());
 
         let a: ToTest = ToTest::K((Some(true), Ok(false)));
+        println!("{:?}", a.encode());
+
+        let a: ToTest = ToTest::M(Some(Nested::SimpleN(10)));
         println!("{:?}", a.encode());
 
         let binding = vec![2, 0, 121, 3, 0, 0, 0, 0, 0, 0];
