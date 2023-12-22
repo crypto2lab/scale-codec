@@ -17,6 +17,11 @@ mod tests {
     }
 
     #[derive(DervieEncode, Decode, Debug)]
+    enum Error {
+        FailureX,
+    }
+
+    #[derive(DervieEncode, Decode, Debug)]
     enum ToTest {
         Single,
         Int(u64),
@@ -29,6 +34,9 @@ mod tests {
         K((Option<bool>, Result<bool, bool>)),
         L(Result<Option<(u64, bool)>, u64>),
         M(Option<Nested>),
+        N(Result<Nested, bool>),
+        O(Result<bool, Nested>),
+        P(Result<Nested, Error>),
     }
 
     #[test]
@@ -116,6 +124,24 @@ mod tests {
         println!("{:?}", a.encode());
 
         let a: ToTest = ToTest::M(Some(Nested::SimpleN(10)));
+        println!("{:?}", a.encode());
+
+        let a: ToTest = ToTest::N(Ok(Nested::SimpleN(78)));
+        println!("{:?}", a.encode());
+
+        let a: ToTest = ToTest::N(Err(true));
+        println!("{:?}", a.encode());
+
+        let a: ToTest = ToTest::O(Ok(true));
+        println!("{:?}", a.encode());
+
+        let a: ToTest = ToTest::O(Err(Nested::SimpleN(76)));
+        println!("{:?}", a.encode());
+
+        let a: ToTest = ToTest::P(Ok(Nested::SimpleN(u32::MAX)));
+        println!("{:?}", a.encode());
+
+        let a: ToTest = ToTest::P(Err(Error::FailureX));
         println!("{:?}", a.encode());
 
         let binding = vec![2, 0, 121, 3, 0, 0, 0, 0, 0, 0];

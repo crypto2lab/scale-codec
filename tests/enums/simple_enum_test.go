@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"math"
 	"reflect"
 	"testing"
 
@@ -99,6 +100,53 @@ func TestSimpleEnumMarshaler(t *testing.T) {
 				Inner: scale_codec.SomeG[Nested](
 					&Number{Inner: &scale_codec.Integer[uint32]{10}},
 				),
+			},
+		},
+		{
+			expectedBytes: []byte{10, 0},
+			marshaler: &M{
+				Inner: scale_codec.NoneG[Nested](),
+			},
+		},
+		{
+			expectedBytes: []byte{11, 0, 0, 78, 0, 0, 0},
+			marshaler: &N{
+				Inner: scale_codec.OkG[Nested, *scale_codec.Bool](
+					&Number{Inner: &scale_codec.Integer[uint32]{Value: 78}}),
+			},
+		},
+		{
+			expectedBytes: []byte{11, 1, 1},
+			marshaler: &N{
+				Inner: scale_codec.ErrG[Nested, *scale_codec.Bool](
+					&scale_codec.Bool{Value: true}),
+			},
+		},
+		{
+			expectedBytes: []byte{12, 0, 1},
+			marshaler: &O{
+				Inner: scale_codec.OkG[*scale_codec.Bool, Nested](
+					&scale_codec.Bool{Value: true}),
+			},
+		},
+		{
+			expectedBytes: []byte{12, 1, 0, 76, 0, 0, 0},
+			marshaler: &O{
+				Inner: scale_codec.ErrG[*scale_codec.Bool, Nested](
+					&Number{Inner: &scale_codec.Integer[uint32]{Value: 76}}),
+			},
+		},
+		{
+			expectedBytes: []byte{13, 0, 0, 255, 255, 255, 255},
+			marshaler: &P{
+				Inner: scale_codec.OkG[Nested, Error](
+					&Number{Inner: &scale_codec.Integer[uint32]{Value: math.MaxUint32}}),
+			},
+		},
+		{
+			expectedBytes: []byte{13, 1, 0},
+			marshaler: &P{
+				Inner: scale_codec.ErrG[Nested, Error](NewFailureX()),
 			},
 		},
 	}
@@ -209,6 +257,53 @@ func TestSimpleEnumUnmarshaler(t *testing.T) {
 						Inner: &scale_codec.Integer[uint32]{10},
 					},
 				),
+			},
+		},
+		{
+			inputBytes: []byte{10, 0},
+			expectedVariant: &M{
+				Inner: scale_codec.NoneG[Nested](),
+			},
+		},
+		{
+			inputBytes: []byte{11, 0, 0, 78, 0, 0, 0},
+			expectedVariant: &N{
+				Inner: scale_codec.OkG[Nested, *scale_codec.Bool](
+					&Number{Inner: &scale_codec.Integer[uint32]{Value: 78}}),
+			},
+		},
+		{
+			inputBytes: []byte{11, 1, 1},
+			expectedVariant: &N{
+				Inner: scale_codec.ErrG[Nested, *scale_codec.Bool](
+					&scale_codec.Bool{Value: true}),
+			},
+		},
+		{
+			inputBytes: []byte{12, 0, 1},
+			expectedVariant: &O{
+				Inner: scale_codec.OkG[*scale_codec.Bool, Nested](
+					&scale_codec.Bool{Value: true}),
+			},
+		},
+		{
+			inputBytes: []byte{12, 1, 0, 76, 0, 0, 0},
+			expectedVariant: &O{
+				Inner: scale_codec.ErrG[*scale_codec.Bool, Nested](
+					&Number{Inner: &scale_codec.Integer[uint32]{Value: 76}}),
+			},
+		},
+		{
+			inputBytes: []byte{13, 0, 0, 255, 255, 255, 255},
+			expectedVariant: &P{
+				Inner: scale_codec.OkG[Nested, Error](
+					&Number{Inner: &scale_codec.Integer[uint32]{Value: math.MaxUint32}}),
+			},
+		},
+		{
+			inputBytes: []byte{13, 1, 0},
+			expectedVariant: &P{
+				Inner: scale_codec.ErrG[Nested, Error](NewFailureX()),
 			},
 		},
 	}

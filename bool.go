@@ -8,6 +8,15 @@ import (
 
 var ErrExpectedOneByteRead = errors.New("expected one byte read")
 
+func BoolFromRawBytes(reader io.Reader) (*Bool, error) {
+	scaleBool := new(Bool)
+	if err := scaleBool.UnmarshalSCALE(reader); err != nil {
+		return nil, err
+	}
+
+	return scaleBool, nil
+}
+
 type Bool struct {
 	Value bool
 }

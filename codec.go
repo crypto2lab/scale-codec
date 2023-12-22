@@ -23,11 +23,3 @@ type Encodable interface {
 	Marshaler
 	Unmarshaler
 }
-
-type Vector[T Encodable] struct {
-	items []T
-}
-
-type String struct {
-	inner string
-}

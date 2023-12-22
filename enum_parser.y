@@ -63,6 +63,7 @@ EnumField: IDENTIFIER {
 ComplexType: TYPE {
     $$.sval = "new(" + $1.sval + ")"
     $$.ttype = "*" + $1.sval
+    $$.fromRawBytesFunc = $1.fromRawBytesFunc
 } | Tuple | Option | Result ;
 
 
@@ -90,14 +91,17 @@ Result: TYPE "<" ComplexType "," ComplexType ">" {
     $$.sval = "scale_codec.NewResult(" + $3.sval + "," + $5.sval + ")"
     $$.ttype = "*scale_codec.Result"
 } | TYPE "<" IDENTIFIER "," ComplexType ">" {
-    $$.sval = "scale_codec.NewResult(" + $3.sval + "," + $5.sval + ")"
-    $$.ttype = "*scale_codec.Result"
+    $$.sval = "new(scale_codec.ResultG[" + $3.sval + "," + $5.ttype + "])"
+    $$.ttype = "*scale_codec.ResultG[" + $3.sval + "," + $5.ttype +"]"
+    $$.unmarshalScale  = "return i.Inner.UnmarshalSCALE(reader, Unmarshal" + $3.sval + ", " + $5.fromRawBytesFunc + ")"
 } | TYPE "<" ComplexType "," IDENTIFIER ">" {
-    $$.sval = "scale_codec.NewResult(" + $3.sval + "," + $5.sval + ")"
-    $$.ttype = "*scale_codec.Result"
+    $$.sval = "new(scale_codec.ResultG[" + $3.ttype + "," + $5.sval + "])"
+    $$.ttype = "*scale_codec.ResultG[" + $3.ttype + "," + $5.sval +"]"
+    $$.unmarshalScale  = "return i.Inner.UnmarshalSCALE(reader, " + $3.fromRawBytesFunc + ", Unmarshal" + $5.sval + ")"
 } | TYPE "<" IDENTIFIER "," IDENTIFIER ">" {
-    $$.sval = "scale_codec.NewResult(" + $3.sval + "," + $5.sval + ")"
-    $$.ttype = "*scale_codec.Result"
+    $$.sval = "new(scale_codec.ResultG[" + $3.sval + "," + $5.sval + "])"
+    $$.ttype = "*scale_codec.ResultG[" + $3.sval + "," + $5.sval +"]"
+    $$.unmarshalScale  = "return i.Inner.UnmarshalSCALE(reader, Unmarshal" + $3.sval + ", Unmarshal" + $5.sval + ")"
 } ;
 
 %%

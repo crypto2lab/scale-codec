@@ -13,6 +13,14 @@ import (
 
 var ErrUnexpectedInteger = errors.New("unexpected integer")
 
+func IntegerFromRawBytes[T constraints.Integer](reader io.Reader) (*Integer[T], error) {
+	scaleInteger := new(Integer[T])
+	if err := scaleInteger.UnmarshalSCALE(reader); err != nil {
+		return nil, err
+	}
+	return scaleInteger, nil
+}
+
 type Integer[T constraints.Integer] struct {
 	Value T
 }

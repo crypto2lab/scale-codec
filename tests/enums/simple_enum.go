@@ -39,6 +39,36 @@ func UnmarshalNested(reader io.Reader) (Nested, error) {
 		return nil, fmt.Errorf("unexpected enum tag: %v", enumTag[0])
 	}
 }
+type Error interface {
+	scale_codec.Encodable
+	IsError()
+}
+
+func UnmarshalError(reader io.Reader) (Error, error) {
+	enumTag := make([]byte, 1)
+	n, err := reader.Read(enumTag)
+	if err != nil {
+		return nil, err
+	}
+
+	if n != 1 {
+		return nil, fmt.Errorf("%w: got %v", scale_codec.ErrExpectedOneByteRead, n)
+	}
+
+	switch enumTag[0] {
+	
+	case FailureXIndex:
+		unmarshaler := NewFailureX()
+		err := unmarshaler.UnmarshalSCALE(reader)
+		if err != nil {
+			return nil, err
+		}
+		return unmarshaler, err
+	
+	default:
+		return nil, fmt.Errorf("unexpected enum tag: %v", enumTag[0])
+	}
+}
 type MyScaleEncodedEnum interface {
 	scale_codec.Encodable
 	IsMyScaleEncodedEnum()
@@ -145,6 +175,30 @@ func UnmarshalMyScaleEncodedEnum(reader io.Reader) (MyScaleEncodedEnum, error) {
 		}
 		return unmarshaler, err
 	
+	case NIndex:
+		unmarshaler := NewN()
+		err := unmarshaler.UnmarshalSCALE(reader)
+		if err != nil {
+			return nil, err
+		}
+		return unmarshaler, err
+	
+	case OIndex:
+		unmarshaler := NewO()
+		err := unmarshaler.UnmarshalSCALE(reader)
+		if err != nil {
+			return nil, err
+		}
+		return unmarshaler, err
+	
+	case PIndex:
+		unmarshaler := NewP()
+		err := unmarshaler.UnmarshalSCALE(reader)
+		if err != nil {
+			return nil, err
+		}
+		return unmarshaler, err
+	
 	default:
 		return nil, fmt.Errorf("unexpected enum tag: %v", enumTag[0])
 	}
@@ -178,6 +232,35 @@ func (i Number) MarshalSCALE() ([]byte, error) {
 }
 
 func (i *Number) UnmarshalSCALE(reader io.Reader) error {
+	return i.Inner.UnmarshalSCALE(reader)
+}
+var FailureXIndex byte = 0
+
+var _ Error = (*FailureX)(nil)
+
+type FailureX struct {
+	Inner *scale_codec.SimpleVariant
+}
+
+func NewFailureX() *FailureX {
+	return &FailureX{
+		Inner: new(scale_codec.SimpleVariant),
+	}
+}
+
+func (FailureX) IsError() {}
+
+func (i FailureX) MarshalSCALE() ([]byte, error) {
+	innerEncode, err := i.Inner.MarshalSCALE()
+	if err != nil {
+		return nil, err
+	}
+
+	idx := FailureXIndex
+	return bytes.Join([][]byte{[]byte{idx}, innerEncode}, nil), nil
+}
+
+func (i *FailureX) UnmarshalSCALE(reader io.Reader) error {
 	return i.Inner.UnmarshalSCALE(reader)
 }
 var SingleIndex byte = 0
@@ -498,4 +581,91 @@ func (i M) MarshalSCALE() ([]byte, error) {
 
 func (i *M) UnmarshalSCALE(reader io.Reader) error {
 	return i.Inner.UnmarshalSCALE(reader, UnmarshalNested)
+}
+var NIndex byte = 11
+
+var _ MyScaleEncodedEnum = (*N)(nil)
+
+type N struct {
+	Inner *scale_codec.ResultG[Nested,*scale_codec.Bool]
+}
+
+func NewN() *N {
+	return &N{
+		Inner: new(scale_codec.ResultG[Nested,*scale_codec.Bool]),
+	}
+}
+
+func (N) IsMyScaleEncodedEnum() {}
+
+func (i N) MarshalSCALE() ([]byte, error) {
+	innerEncode, err := i.Inner.MarshalSCALE()
+	if err != nil {
+		return nil, err
+	}
+
+	idx := NIndex
+	return bytes.Join([][]byte{[]byte{idx}, innerEncode}, nil), nil
+}
+
+func (i *N) UnmarshalSCALE(reader io.Reader) error {
+	return i.Inner.UnmarshalSCALE(reader, UnmarshalNested, scale_codec.BoolFromRawBytes)
+}
+var OIndex byte = 12
+
+var _ MyScaleEncodedEnum = (*O)(nil)
+
+type O struct {
+	Inner *scale_codec.ResultG[*scale_codec.Bool,Nested]
+}
+
+func NewO() *O {
+	return &O{
+		Inner: new(scale_codec.ResultG[*scale_codec.Bool,Nested]),
+	}
+}
+
+func (O) IsMyScaleEncodedEnum() {}
+
+func (i O) MarshalSCALE() ([]byte, error) {
+	innerEncode, err := i.Inner.MarshalSCALE()
+	if err != nil {
+		return nil, err
+	}
+
+	idx := OIndex
+	return bytes.Join([][]byte{[]byte{idx}, innerEncode}, nil), nil
+}
+
+func (i *O) UnmarshalSCALE(reader io.Reader) error {
+	return i.Inner.UnmarshalSCALE(reader, scale_codec.BoolFromRawBytes, UnmarshalNested)
+}
+var PIndex byte = 13
+
+var _ MyScaleEncodedEnum = (*P)(nil)
+
+type P struct {
+	Inner *scale_codec.ResultG[Nested,Error]
+}
+
+func NewP() *P {
+	return &P{
+		Inner: new(scale_codec.ResultG[Nested,Error]),
+	}
+}
+
+func (P) IsMyScaleEncodedEnum() {}
+
+func (i P) MarshalSCALE() ([]byte, error) {
+	innerEncode, err := i.Inner.MarshalSCALE()
+	if err != nil {
+		return nil, err
+	}
+
+	idx := PIndex
+	return bytes.Join([][]byte{[]byte{idx}, innerEncode}, nil), nil
+}
+
+func (i *P) UnmarshalSCALE(reader io.Reader) error {
+	return i.Inner.UnmarshalSCALE(reader, UnmarshalNested, UnmarshalError)
 }

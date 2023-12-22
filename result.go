@@ -6,6 +6,85 @@ import (
 	"io"
 )
 
+type ResultG[T Encodable, E Encodable] struct {
+	ok   T
+	isOk bool
+
+	err   E
+	isErr bool
+}
+
+func (r ResultG[T, E]) MarshalSCALE() ([]byte, error) {
+	if r.isErr {
+		encErrResult := []byte{0x01}
+		encErr, err := r.err.MarshalSCALE()
+		if err != nil {
+			return nil, fmt.Errorf("encoding result error: %w", err)
+		}
+
+		return bytes.Join([][]byte{encErrResult, encErr}, nil), nil
+	}
+
+	if r.isOk {
+		encOkResult := []byte{0x00}
+		encOk, err := r.ok.MarshalSCALE()
+		if err != nil {
+			return nil, fmt.Errorf("encoding result ok: %w", err)
+		}
+
+		return bytes.Join([][]byte{encOkResult, encOk}, nil), nil
+	}
+
+	return nil, ErrCannotEncodeEmptyResult
+}
+
+func (r *ResultG[T, E]) UnmarshalSCALE(reader io.Reader,
+	okF func(io.Reader) (T, error), errF func(io.Reader) (E, error)) error {
+	encResultTag := make([]byte, 1)
+	n, err := reader.Read(encResultTag)
+	if err != nil {
+		return err
+	}
+
+	if n != 1 {
+		return fmt.Errorf("%w: want %v, got %v", ErrUnexpectedReadBytes, 1, n)
+	}
+
+	switch encResultTag[0] {
+	case 0x00:
+		ok, err := okF(reader)
+		if err != nil {
+			return fmt.Errorf("while parsing result ok: %w", err)
+		}
+		*r = *OkG[T, E](ok)
+	case 0x01:
+		errResult, err := errF(reader)
+		if err != nil {
+			return fmt.Errorf("while parsing result err: %w", err)
+		}
+		*r = *ErrG[T, E](errResult)
+		return nil
+	default:
+		return fmt.Errorf("%w: %v", ErrUnexpectedResultTag, encResultTag)
+	}
+
+	return nil
+}
+
+func OkG[T Encodable, E Encodable](ok T) *ResultG[T, E] {
+	return &ResultG[T, E]{
+		isOk: true,
+		ok:   ok,
+	}
+}
+
+func ErrG[T Encodable, E Encodable](err E) *ResultG[T, E] {
+	return &ResultG[T, E]{
+		isErr: true,
+		err:   err,
+	}
+}
+
 type Result struct {
 	ok   Encodable
 	isOk bool

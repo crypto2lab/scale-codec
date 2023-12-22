@@ -2,6 +2,8 @@ package scale_codec_test
 
 import (
 	"bytes"
+	"fmt"
+	"io"
 	"reflect"
 	"testing"
 
@@ -91,5 +93,99 @@ func TestResultUnmarshal(t *testing.T) {
 		if !reflect.DeepEqual(tt.expected, actualValue) {
 			t.Fatalf("\nexpected: %v\nactual: %v", tt.expected, actualValue)
 		}
+	}
+}
+
+type TestResultNested interface {
+	scale_codec.Encodable
+	isTestResultEnum()
+}
+
+func UnmarshalTestResultNested(reader io.Reader) (TestResultNested, error) {
+	enumTag := make([]byte, 1)
+	n, err := reader.Read(enumTag)
+	if err != nil {
+		return nil, err
+	}
+
+	if n != 1 {
+		return nil, fmt.Errorf("%w: got %v", scale_codec.ErrExpectedOneByteRead, n)
+	}
+
+	switch enumTag[0] {
+	case 0:
+		numberx := &SimpleN{Inner: new(scale_codec.Integer[uint32])}
+		err := numberx.UnmarshalSCALE(reader)
+		if err != nil {
+			return nil, err
+		}
+
+		return numberx, err
+	default:
+		return nil, fmt.Errorf("failure to decode bla bla bla")
+	}
+}
+
+type SimpleN struct {
+	Inner *scale_codec.Integer[uint32]
+}
+
+func (SimpleN) isTestResultEnum() {}
+
+func (n SimpleN) MarshalSCALE() ([]byte, error) {
+	innerEncode, err := n.Inner.MarshalSCALE()
+	if err != nil {
+		return nil, err
+	}
+
+	return bytes.Join([][]byte{[]byte{0x00}, innerEncode}, nil), nil
+}
+
+func (n *SimpleN) UnmarshalSCALE(reader io.Reader) error {
+	return n.Inner.UnmarshalSCALE(reader)
+}
+
+func TestResultMarshalerGeneric(t *testing.T) {
+	marshaler := scale_codec.OkG[TestResultNested, *scale_codec.Bool](
+		&SimpleN{Inner: &scale_codec.Integer[uint32]{Value: 78}})
+
+	output, err := marshaler.MarshalSCALE()
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	fmt.Println(output)
+}
+
+func TestResultUnmarshalerGeneric(t *testing.T) {
+	inputBytes := []byte{0, 0, 78, 0, 0, 0}
+	unmarshaler := new(scale_codec.ResultG[TestResultNested, *scale_codec.Bool])
+
+	err := unmarshaler.UnmarshalSCALE(bytes.NewReader(inputBytes), UnmarshalTestResultNested, nil)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	expected := scale_codec.OkG[TestResultNested, *scale_codec.Bool](
+		&SimpleN{Inner: &scale_codec.Integer[uint32]{Value: 78}})
+
+	if !reflect.DeepEqual(expected, unmarshaler) {
+		t.Fatalf("\nexpected: %v\nactual: %v", expected, unmarshaler)
+	}
+
+	inputBytes = []byte{1, 0}
+	unmarshaler = new(scale_codec.ResultG[TestResultNested, *scale_codec.Bool])
+
+	err = unmarshaler.UnmarshalSCALE(bytes.NewReader(inputBytes), UnmarshalTestResultNested, scale_codec.BoolFromRawBytes)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	expected = scale_codec.ErrG[TestResultNested, *scale_codec.Bool](
+		&scale_codec.Bool{Value: false},
+	)
+
+	if !reflect.DeepEqual(expected, unmarshaler) {
+		t.Fatalf("\nexpected: %v\nactual: %v", expected, unmarshaler)
 	}
 }

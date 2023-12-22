@@ -2,6 +2,10 @@ enum Nested {
 	Number(uint32)
 }
 
+enum Error {
+	FailureX
+}
+
 enum MyScaleEncodedEnum {
 	Single
     Int(uint64)
@@ -14,4 +18,7 @@ enum MyScaleEncodedEnum {
 	K((Option<bool>, Result<bool, bool>))
 	L(Result<Option<(uint64, bool)>, uint64>)
 	M(Option<Nested>)
+	N(Result<Nested, bool>)
+	O(Result<bool, Nested>)
+	P(Result<Nested, Error>)
 }
