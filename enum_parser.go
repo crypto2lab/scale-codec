@@ -5,6 +5,7 @@ import __yyfmt__ "fmt"
 
 import (
 	"fmt"
+	"strings"
 )
 
 type Enum struct {
@@ -19,11 +20,18 @@ type EnumField struct {
 	UnmarshalScale  string
 }
 
-var Enums []Enum
+var (
+	Enums []Enum
+
+	// map of tuple name and tuple qty of values
+	GenericTuple map[string]int = make(map[string]int)
+)
 
 const ENUM = 57346
 const IDENTIFIER = 57347
 const TYPE = 57348
+const RESULT = 57349
+const OPTION = 57350
 
 var yyToknames = [...]string{
 	"$end",
@@ -32,6 +40,8 @@ var yyToknames = [...]string{
 	"ENUM",
 	"IDENTIFIER",
 	"TYPE",
+	"RESULT",
+	"OPTION",
 	"\"{\"",
 	"\"}\"",
 	"\"(\"",
@@ -47,6 +57,16 @@ const yyEofCode = 1
 const yyErrCode = 2
 const yyInitialStackSize = 16
 
+func hasGenericArgs(args []string) bool {
+	for _, input := range args {
+		if !strings.HasPrefix(input, "*") {
+			return true
+		}
+	}
+
+	return false
+}
+
 var yyExca = [...]int8{
 	-1, 1,
 	1, -1,
@@ -55,51 +75,56 @@ var yyExca = [...]int8{
 
 const yyPrivate = 57344
 
-const yyLast = 43
+const yyLast = 68
 
 var yyAct = [...]int8{
-	11, 28, 26, 27, 25, 37, 36, 35, 34, 23,
-	24, 17, 18, 12, 33, 12, 16, 20, 16, 21,
-	31, 12, 22, 12, 16, 29, 16, 30, 10, 32,
-	9, 5, 4, 7, 3, 19, 15, 14, 13, 8,
-	6, 2, 1,
+	11, 44, 43, 42, 41, 40, 12, 18, 17, 34,
+	33, 16, 38, 12, 18, 17, 24, 22, 16, 23,
+	31, 12, 18, 17, 27, 29, 16, 32, 30, 12,
+	18, 17, 25, 26, 16, 36, 37, 39, 28, 12,
+	18, 17, 35, 19, 16, 21, 12, 18, 17, 10,
+	9, 16, 12, 18, 17, 7, 5, 16, 4, 3,
+	20, 15, 14, 13, 8, 6, 2, 1,
 }
 
 var yyPact = [...]int16{
-	-1000, 30, -1000, 27, 24, -1000, 25, -1000, -1000, 19,
-	7, 1, 0, -1000, -1000, -1000, 7, -1000, 17, -1,
-	-1000, -9, -10, -1000, 7, -1000, 15, -1000, 9, -1000,
-	-5, -6, -7, -8, -1000, -1000, -1000, -1000,
+	-1000, 55, -1000, 53, 47, -1000, 45, -1000, -1000, 38,
+	46, 31, -1000, -1000, -1000, -1000, 40, 5, 2, -1000,
+	20, -1000, -1000, 33, 23, -1000, 15, -5, -6, 29,
+	22, -1000, -1000, -1000, -1000, 7, 0, -11, -12, -13,
+	-14, -1000, -1000, -1000, -1000,
 }
 
 var yyPgo = [...]int8{
-	0, 42, 41, 40, 39, 0, 38, 37, 36, 35,
+	0, 67, 66, 65, 64, 0, 63, 62, 61, 60,
 }
 
 var yyR1 = [...]int8{
 	0, 1, 1, 2, 3, 3, 4, 4, 5, 5,
-	5, 5, 6, 9, 9, 7, 7, 8, 8, 8,
-	8,
+	5, 5, 6, 9, 9, 9, 9, 7, 7, 8,
+	8, 8, 8,
 }
 
 var yyR2 = [...]int8{
 	0, 0, 2, 5, 0, 2, 1, 4, 1, 1,
-	1, 1, 3, 1, 3, 4, 4, 6, 6, 6,
-	6,
+	1, 1, 3, 1, 1, 3, 3, 4, 4, 6,
+	6, 6, 6,
 }
 
 var yyChk = [...]int16{
-	-1000, -1, -2, 4, 5, 7, -3, 8, -4, 5,
-	9, -5, 6, -6, -7, -8, 9, 10, 12, -9,
-	-5, -5, 5, 10, 11, 13, 11, 13, 11, -5,
-	-5, 5, -5, 5, 13, 13, 13, 13,
+	-1000, -1, -2, 4, 5, 9, -3, 10, -4, 5,
+	11, -5, 6, -6, -7, -8, 11, 8, 7, 12,
+	-9, 5, -5, 14, 14, 12, 13, -5, 5, -5,
+	5, 5, -5, 15, 15, 13, 13, -5, 5, -5,
+	5, 15, 15, 15, 15,
 }
 
 var yyDef = [...]int8{
 	1, -2, 2, 0, 0, 4, 0, 3, 5, 6,
-	0, 0, 8, 9, 10, 11, 0, 7, 0, 0,
-	13, 0, 0, 12, 0, 15, 0, 16, 0, 14,
-	0, 0, 0, 0, 17, 19, 18, 20,
+	0, 0, 8, 9, 10, 11, 0, 0, 0, 7,
+	0, 13, 14, 0, 0, 12, 0, 0, 0, 0,
+	0, 15, 16, 17, 18, 0, 0, 0, 0, 0,
+	0, 19, 21, 20, 22,
 }
 
 var yyTok1 = [...]int8{
@@ -107,19 +132,19 @@ var yyTok1 = [...]int8{
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-	9, 10, 3, 3, 11, 3, 3, 3, 3, 3,
+	11, 12, 3, 3, 13, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-	12, 3, 13, 3, 3, 3, 3, 3, 3, 3,
-	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+	14, 3, 15, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-	3, 3, 3, 7, 3, 8,
+	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+	3, 3, 3, 9, 3, 10,
 }
 
 var yyTok2 = [...]int8{
-	2, 3, 4, 5, 6,
+	2, 3, 4, 5, 6, 7, 8,
 }
 
 var yyTok3 = [...]int8{
@@ -513,53 +538,80 @@ yydefault:
 	case 12:
 		yyDollar = yyS[yypt-3 : yypt+1]
 		{
-			yyVAL.sval = "scale_codec.NewTuple(" + yyDollar[2].sval + ")"
-			yyVAL.ttype = "*scale_codec.Tuple"
+			if hasGenericArgs(yyDollar[2].tupleValuesTypes) {
+				GenericTuple["T"+fmt.Sprint(len(yyDollar[2].tupleValuesTypes))] = len(yyDollar[2].tupleValuesTypes)
+				genericTuple := "T" + fmt.Sprint(len(yyDollar[2].tupleValuesTypes)) + "[" + strings.Join(yyDollar[2].tupleValuesTypes, ",") + "]"
+				yyVAL.ttype = "*" + genericTuple
+				yyVAL.sval = "new(" + genericTuple + ")"
+				yyVAL.unmarshalScale = "return i.Inner.UnmarshalSCALE(reader," + strings.Join(yyDollar[2].tupleValuesUnmarshalScale, ",") + ")"
+			} else {
+				yyVAL.sval = "scale_codec.NewTuple(" + yyDollar[2].sval + ")"
+				yyVAL.ttype = "*scale_codec.Tuple"
+			}
 		}
 	case 13:
 		yyDollar = yyS[yypt-1 : yypt+1]
 		{
 			yyVAL.sval = yyDollar[1].sval
+			yyVAL.tupleValuesTypes = append(yyVAL.tupleValuesTypes, yyDollar[1].sval)
+			yyVAL.tupleValuesUnmarshalScale = append(yyVAL.tupleValuesUnmarshalScale, "Unmarshal"+yyDollar[1].sval)
 		}
 	case 14:
+		yyDollar = yyS[yypt-1 : yypt+1]
+		{
+			yyVAL.sval = yyDollar[1].sval
+			yyVAL.tupleValuesTypes = append(yyVAL.tupleValuesTypes, yyDollar[1].ttype)
+			yyVAL.tupleValuesUnmarshalScale = append(yyVAL.tupleValuesUnmarshalScale, yyDollar[1].fromRawBytesFunc)
+		}
+	case 15:
 		yyDollar = yyS[yypt-3 : yypt+1]
 		{
 			yyVAL.sval += "," + yyDollar[3].sval
+			yyVAL.tupleValuesTypes = append(yyVAL.tupleValuesTypes, yyDollar[3].sval)
+			yyVAL.tupleValuesUnmarshalScale = append(yyVAL.tupleValuesUnmarshalScale, "Unmarshal"+yyDollar[3].sval)
 		}
-	case 15:
+	case 16:
+		yyDollar = yyS[yypt-3 : yypt+1]
+		{
+			yyVAL.sval += "," + yyDollar[3].sval
+			yyVAL.tupleValuesTypes = append(yyVAL.tupleValuesTypes, yyDollar[3].ttype)
+			yyVAL.tupleValuesUnmarshalScale = append(yyVAL.tupleValuesUnmarshalScale, yyDollar[3].fromRawBytesFunc)
+		}
+	case 17:
 		yyDollar = yyS[yypt-4 : yypt+1]
 		{
 			yyVAL.sval = "scale_codec.NewOption(" + yyDollar[3].sval + ")"
 			yyVAL.ttype = "*scale_codec.Option"
 		}
-	case 16:
+	case 18:
 		yyDollar = yyS[yypt-4 : yypt+1]
 		{
 			yyVAL.sval = "new(scale_codec.OptionG[" + yyDollar[3].sval + "])"
 			yyVAL.ttype = "*scale_codec.OptionG[" + yyDollar[3].sval + "]"
 			yyVAL.unmarshalScale = "return i.Inner.UnmarshalSCALE(reader, Unmarshal" + yyDollar[3].sval + ")"
 		}
-	case 17:
+	case 19:
 		yyDollar = yyS[yypt-6 : yypt+1]
 		{
-			yyVAL.sval = "scale_codec.NewResult(" + yyDollar[3].sval + "," + yyDollar[5].sval + ")"
-			yyVAL.ttype = "*scale_codec.Result"
+			yyVAL.sval = "new(scale_codec.ResultG[" + yyDollar[3].ttype + "," + yyDollar[5].ttype + "])"
+			yyVAL.ttype = "*scale_codec.ResultG[" + yyDollar[3].ttype + "," + yyDollar[5].ttype + "]"
+			yyVAL.unmarshalScale = "return i.Inner.UnmarshalSCALE(reader, " + yyDollar[3].fromRawBytesFunc + ", " + yyDollar[5].fromRawBytesFunc + ")"
 		}
-	case 18:
+	case 20:
 		yyDollar = yyS[yypt-6 : yypt+1]
 		{
 			yyVAL.sval = "new(scale_codec.ResultG[" + yyDollar[3].sval + "," + yyDollar[5].ttype + "])"
 			yyVAL.ttype = "*scale_codec.ResultG[" + yyDollar[3].sval + "," + yyDollar[5].ttype + "]"
 			yyVAL.unmarshalScale = "return i.Inner.UnmarshalSCALE(reader, Unmarshal" + yyDollar[3].sval + ", " + yyDollar[5].fromRawBytesFunc + ")"
 		}
-	case 19:
+	case 21:
 		yyDollar = yyS[yypt-6 : yypt+1]
 		{
 			yyVAL.sval = "new(scale_codec.ResultG[" + yyDollar[3].ttype + "," + yyDollar[5].sval + "])"
 			yyVAL.ttype = "*scale_codec.ResultG[" + yyDollar[3].ttype + "," + yyDollar[5].sval + "]"
 			yyVAL.unmarshalScale = "return i.Inner.UnmarshalSCALE(reader, " + yyDollar[3].fromRawBytesFunc + ", Unmarshal" + yyDollar[5].sval + ")"
 		}
-	case 20:
+	case 22:
 		yyDollar = yyS[yypt-6 : yypt+1]
 		{
 			yyVAL.sval = "new(scale_codec.ResultG[" + yyDollar[3].sval + "," + yyDollar[5].sval + "])"

@@ -13,6 +13,18 @@ type OptionG[T Encodable] struct {
 	isNone bool
 }
 
+func UnmarshalOptionFromRawBytes[T Encodable](
+	f func(io.Reader) (T, error)) func(reader io.Reader) (*OptionG[T], error) {
+	return func(reader io.Reader) (*OptionG[T], error) {
+		option := &OptionG[T]{}
+		err := option.UnmarshalSCALE(reader, f)
+		if err != nil {
+			return nil, err
+		}
+		return option, nil
+	}
+}
+
 func (o *OptionG[T]) MarshalSCALE() ([]byte, error) {
 	if o.isNone {
 		return NoneEncoded, nil

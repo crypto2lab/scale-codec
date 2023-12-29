@@ -22,6 +22,11 @@ mod tests {
     }
 
     #[derive(DervieEncode, Decode, Debug)]
+    enum EnumA {
+        A(bool),
+    }
+
+    #[derive(DervieEncode, Decode, Debug)]
     enum ToTest {
         Single,
         Int(u64),
@@ -37,6 +42,7 @@ mod tests {
         N(Result<Nested, bool>),
         O(Result<bool, Nested>),
         P(Result<Nested, Error>),
+        Q((Nested, u64, Error)),
     }
 
     #[test]
@@ -64,7 +70,7 @@ mod tests {
 
     #[test]
     fn scale_encode_result() {
-        let a: Result<u64, bool> = Ok(332290);
+        let a: Result<u64, bool> = Ok(32290);
         println!("{:?}", a.encode());
         let b: Result<Result<u64, u8>, bool> = Ok(Err(10 as u8));
         println!("{:?}", b.encode());
@@ -90,61 +96,64 @@ mod tests {
 
     #[test]
     fn scale_encode_enum() {
-        let a: ToTest = ToTest::Single;
-        println!("{:?}", a.encode());
+        // let a: ToTest = ToTest::Single;
+        // println!("{:?}", a.encode());
 
-        let a: ToTest = ToTest::Int(32);
-        println!("{:?}", a.encode());
+        // let a: ToTest = ToTest::Int(32);
+        // println!("{:?}", a.encode());
 
-        let a: ToTest = ToTest::Bool(true);
-        println!("{:?}", a.encode());
+        // let a: ToTest = ToTest::Bool(true);
+        // println!("{:?}", a.encode());
 
-        let a: ToTest = ToTest::A(Some(true));
-        println!("{:?}", a.encode());
+        // let a: ToTest = ToTest::A(Some(true));
+        // println!("{:?}", a.encode());
 
-        let a: ToTest = ToTest::A(None);
-        println!("{:?}", a.encode());
+        // let a: ToTest = ToTest::A(None);
+        // println!("{:?}", a.encode());
 
-        let a: ToTest = ToTest::B(Ok(108));
-        println!("{:?}", a.encode());
+        // let a: ToTest = ToTest::B(Ok(108));
+        // println!("{:?}", a.encode());
 
-        let a: ToTest = ToTest::B(Err(90));
-        println!("{:?}", a.encode());
+        // let a: ToTest = ToTest::B(Err(90));
+        // println!("{:?}", a.encode());
 
-        let a: ToTest = ToTest::G((60, false));
-        println!("{:?}", a.encode());
+        // let a: ToTest = ToTest::G((60, false));
+        // println!("{:?}", a.encode());
 
-        let a: ToTest = ToTest::H(Some((60, false)));
-        println!("{:?}", a.encode());
+        // let a: ToTest = ToTest::H(Some((60, false)));
+        // println!("{:?}", a.encode());
 
-        let a: ToTest = ToTest::J(Ok((60, false)));
-        println!("{:?}", a.encode());
+        // let a: ToTest = ToTest::J(Ok((60, false)));
+        // println!("{:?}", a.encode());
 
-        let a: ToTest = ToTest::K((Some(true), Ok(false)));
-        println!("{:?}", a.encode());
+        // let a: ToTest = ToTest::K((Some(true), Ok(false)));
+        // println!("{:?}", a.encode());
 
-        let a: ToTest = ToTest::M(Some(Nested::SimpleN(10)));
-        println!("{:?}", a.encode());
+        // let a: ToTest = ToTest::M(Some(Nested::SimpleN(10)));
+        // println!("{:?}", a.encode());
 
-        let a: ToTest = ToTest::N(Ok(Nested::SimpleN(78)));
-        println!("{:?}", a.encode());
+        // let a: ToTest = ToTest::N(Ok(Nested::SimpleN(78)));
+        // println!("{:?}", a.encode());
 
-        let a: ToTest = ToTest::N(Err(true));
-        println!("{:?}", a.encode());
+        // let a: ToTest = ToTest::N(Err(true));
+        // println!("{:?}", a.encode());
 
-        let a: ToTest = ToTest::O(Ok(true));
-        println!("{:?}", a.encode());
+        // let a: ToTest = ToTest::O(Ok(true));
+        // println!("{:?}", a.encode());
 
-        let a: ToTest = ToTest::O(Err(Nested::SimpleN(76)));
-        println!("{:?}", a.encode());
+        // let a: ToTest = ToTest::O(Err(Nested::SimpleN(76)));
+        // println!("{:?}", a.encode());
 
-        let a: ToTest = ToTest::P(Ok(Nested::SimpleN(u32::MAX)));
-        println!("{:?}", a.encode());
+        // let a: ToTest = ToTest::P(Ok(Nested::SimpleN(u32::MAX)));
+        // println!("{:?}", a.encode());
 
-        let a: ToTest = ToTest::P(Err(Error::FailureX));
-        println!("{:?}", a.encode());
+        // let a: ToTest = ToTest::P(Err(Error::FailureX));
+        // println!("{:?}", a.encode());
 
-        let binding = vec![2, 0, 121, 3, 0, 0, 0, 0, 0, 0];
+        // let a: ToTest = ToTest::Q((Nested::SimpleN(77), 89, Error::FailureX));
+        // println!("{:?}", a.encode());
+
+        let binding = vec![1,32,0,0,0,0,0,0,0];
         let mut b: &[u8] = binding.as_slice();
         let res = ToTest::decode(&mut b).unwrap();
 

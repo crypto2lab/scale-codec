@@ -21,4 +21,6 @@ enum MyScaleEncodedEnum {
 	N(Result<Nested, bool>)
 	O(Result<bool, Nested>)
 	P(Result<Nested, Error>)
+	Q((Nested,uint64,Error)),
+	R((Result<uint64, bool>, Option<uint64>, Error))
 }

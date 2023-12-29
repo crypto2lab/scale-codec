@@ -16,6 +16,8 @@ const defaultPackage = "main"
 const outputExt = ".go"
 const inputExt = ".scale"
 
+var alphabet string = "abcdefghijklmnopqrstuvwxyz"
+
 func isScaleFile(filename string) bool {
 	return filepath.Ext(filename) == inputExt
 }
@@ -23,6 +25,14 @@ func isScaleFile(filename string) bool {
 func removeExtension(filename string) string {
 	ext := filepath.Ext(filename)
 	return filename[:len(filename)-len(ext)]
+}
+
+func parseMap(list string, f func(int, string) string) []string {
+	output := make([]string, len(list))
+	for idx, item := range list {
+		output[idx] = f(idx, string(item))
+	}
+	return output
 }
 
 func main() {
@@ -105,15 +115,17 @@ func parseEnumsDefinition(pacakge string, enums []scale_codec.Enum) string {
 	}
 
 	type fileTemplateValue struct {
-		Package             string
-		EnumsDefinitions    string
-		VariantsDefinitions string
+		Package                 string
+		GenericTupleDefinitions string
+		EnumsDefinitions        string
+		VariantsDefinitions     string
 	}
 
 	value := fileTemplateValue{
-		Package:             pacakge,
-		EnumsDefinitions:    enumsDefinitions.String(),
-		VariantsDefinitions: parseVariantsDefinitions(enums),
+		Package:                 pacakge,
+		GenericTupleDefinitions: parseGenericTupleDefinitions(scale_codec.GenericTuple),
+		EnumsDefinitions:        enumsDefinitions.String(),
+		VariantsDefinitions:     parseVariantsDefinitions(enums),
 	}
 
 	fileBuffer := new(strings.Builder)
@@ -123,6 +135,79 @@ func parseEnumsDefinition(pacakge string, enums []scale_codec.Enum) string {
 	}
 
 	return fileBuffer.String()
+}
+
+func parseGenericTupleDefinitions(genericTuples map[string]int) string {
+	builder := &strings.Builder{}
+
+	for structName, arity := range genericTuples {
+		t, err := template.New("generic_tuple_definitions").Parse(GenericTupleStructTemplate)
+		if err != nil {
+			log.Fatalf("Parsing template error: %v", err)
+		}
+
+		type genericTuple struct {
+			GenericTupleName        string
+			GenericArity            string
+			GenericTupleFields      string
+			GenericNames            string
+			Fields                  []string
+			UnmarshalFuncSignatures string
+			FuncsAndFields          map[string]string
+		}
+
+		generics := alphabet[0:arity]
+		genericArity := parseMap(generics, func(_ int, s string) string {
+			return fmt.Sprintf("%s scale_codec.Encodable",
+				strings.ToUpper(string(s)))
+		})
+
+		genericNames := parseMap(generics, func(_ int, s string) string {
+			return strings.ToUpper(string(s))
+		})
+
+		genericFields := parseMap(generics, func(idx int, s string) string {
+			return fmt.Sprintf("\tF%d %s", idx, strings.ToUpper(string(s)))
+		})
+
+		unmarshalFuncSignatures := parseMap(generics, func(i int, s string) string {
+			return fmt.Sprintf("func%s func (io.Reader) (%s, error)",
+				strings.ToUpper(string(s)),
+				strings.ToUpper(string(s)))
+		})
+
+		unmarshalFuncsNames := parseMap(generics, func(i int, s string) string {
+			return fmt.Sprintf("func%s", strings.ToUpper(string(s)))
+		})
+
+		fieldsNames := make([]string, arity)
+		for idx := range fieldsNames {
+			fieldsNames[idx] = fmt.Sprintf("F%d", idx)
+		}
+
+		funcsAndFields := make(map[string]string, len(unmarshalFuncsNames))
+		for idx, funcName := range unmarshalFuncsNames {
+			funcsAndFields[funcName] = fieldsNames[idx]
+		}
+
+		value := genericTuple{
+			GenericTupleName:        structName,
+			GenericArity:            strings.Join(genericArity, ","),
+			GenericTupleFields:      strings.Join(genericFields, "\n"),
+			GenericNames:            strings.Join(genericNames, ","),
+			Fields:                  fieldsNames,
+			UnmarshalFuncSignatures: strings.Join(unmarshalFuncSignatures, ","),
+			FuncsAndFields:          funcsAndFields,
+		}
+
+		err = t.Execute(builder, value)
+		if err != nil {
+			log.Fatalf("Error: %v", err)
+		}
+		builder.WriteRune('\n')
+	}
+
+	return builder.String()
 }
 
 func parseVariantsDefinitions(parsedEnums []scale_codec.Enum) string {
@@ -142,7 +227,6 @@ func parseVariantsDefinitions(parsedEnums []scale_codec.Enum) string {
 
 	variantsDefs := new(strings.Builder)
 	for _, enum := range parsedEnums {
-
 		for index, vari := range enum.Variants {
 			unmarshalScale := defaultUnmarshalSCALE
 			if strings.TrimSpace(vari.UnmarshalScale) != "" {
@@ -178,6 +262,8 @@ import (
 
 	scale_codec "github.com/crypto2lab/scale-codec"
 )
+
+{{ .GenericTupleDefinitions }}
 
 {{ .EnumsDefinitions }}
 
@@ -243,4 +329,31 @@ func (i {{ .Name }}) MarshalSCALE() ([]byte, error) {
 
 func (i *{{ .Name }}) UnmarshalSCALE(reader io.Reader) error {
 	{{ .UnmarshalSCALE }}
+}`
+
+var GenericTupleStructTemplate = `type {{ .GenericTupleName }}[{{ .GenericArity }}] struct {
+{{ .GenericTupleFields }}
+}
+
+func (t *{{ .GenericTupleName }}[{{ .GenericNames }}]) MarshalSCALE() (output []byte, err error) {
+	output = make([]byte, 0)
+	var enc []byte
+	{{ range $i, $a := .Fields }}
+	enc, err = t.{{ $a }}.MarshalSCALE()
+	if err != nil {
+		return nil, err
+	}
+	output = append(output, enc...)
+	{{ end }}
+	return output, nil
+}
+
+func (t *{{ .GenericTupleName }}[{{ .GenericNames }}]) UnmarshalSCALE(reader io.Reader, {{ .UnmarshalFuncSignatures }}) (err error) {
+	{{ range $func, $field := .FuncsAndFields }}
+	t.{{ $field }}, err =  {{ $func }}(reader)
+	if err != nil {
+		return err
+	}
+	{{ end }}
+	return nil
 }`

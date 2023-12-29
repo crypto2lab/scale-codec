@@ -14,6 +14,19 @@ type ResultG[T Encodable, E Encodable] struct {
 	isErr bool
 }
 
+func UnmarshalResultFromRawBytes[T Encodable, E Encodable](
+	okF func(io.Reader) (T, error),
+	errF func(io.Reader) (E, error)) func(reader io.Reader) (*ResultG[T, E], error) {
+	return func(reader io.Reader) (*ResultG[T, E], error) {
+		result := &ResultG[T, E]{}
+		err := result.UnmarshalSCALE(reader, okF, errF)
+		if err != nil {
+			return nil, err
+		}
+		return result, nil
+	}
+}
+
 func (r ResultG[T, E]) MarshalSCALE() ([]byte, error) {
 	if r.isErr {
 		encErrResult := []byte{0x01}

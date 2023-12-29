@@ -149,6 +149,16 @@ func TestSimpleEnumMarshaler(t *testing.T) {
 				Inner: scale_codec.ErrG[Nested, Error](NewFailureX()),
 			},
 		},
+		{
+			expectedBytes: []byte{14, 0, 77, 0, 0, 0, 89, 0, 0, 0, 0, 0, 0, 0, 0},
+			marshaler: &Q{
+				Inner: &T3[Nested, *scale_codec.Integer[uint64], Error]{
+					F0: &Number{Inner: &scale_codec.Integer[uint32]{77}},
+					F1: &scale_codec.Integer[uint64]{89},
+					F2: NewFailureX(),
+				},
+			},
+		},
 	}
 
 	for _, tt := range cases {
@@ -304,6 +314,16 @@ func TestSimpleEnumUnmarshaler(t *testing.T) {
 			inputBytes: []byte{13, 1, 0},
 			expectedVariant: &P{
 				Inner: scale_codec.ErrG[Nested, Error](NewFailureX()),
+			},
+		},
+		{
+			inputBytes: []byte{14, 0, 77, 0, 0, 0, 89, 0, 0, 0, 0, 0, 0, 0, 0},
+			expectedVariant: &Q{
+				Inner: &T3[Nested, *scale_codec.Integer[uint64], Error]{
+					F0: &Number{Inner: &scale_codec.Integer[uint32]{77}},
+					F1: &scale_codec.Integer[uint64]{89},
+					F2: NewFailureX(),
+				},
 			},
 		},
 	}

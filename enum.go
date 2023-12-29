@@ -22,14 +22,16 @@ func (*SimpleVariant) UnmarshalSCALE(_ io.Reader) error {
 }
 
 type yySymType struct {
-	unmarshalScale   string
-	ttype            string
-	sval             string
-	fromRawBytesFunc string
-	enum             Enum
-	enumField        EnumField
-	enumFields       []EnumField
-	yys              int
+	unmarshalScale            string
+	tupleValuesTypes          []string
+	tupleValuesUnmarshalScale []string
+	ttype                     string
+	sval                      string
+	fromRawBytesFunc          string
+	enum                      Enum
+	enumField                 EnumField
+	enumFields                []EnumField
+	yys                       int
 }
 
 func ParseEnum(filename string, src io.Reader) int {
@@ -77,9 +79,12 @@ func (l *lexer) Lex(lval *yySymType) int {
 		lval.sval = "scale_codec.Bool"
 		lval.fromRawBytesFunc = "scale_codec.BoolFromRawBytes"
 		return TYPE
-	case "Option", "Result":
+	case "Option":
 		lval.sval = lexeme
-		return TYPE
+		return OPTION
+	case "Result":
+		lval.sval = lexeme
+		return RESULT
 	default:
 		lval.sval = lexeme
 		return IDENTIFIER

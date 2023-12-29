@@ -5,6 +5,10 @@ import (
 	"io"
 )
 
+type FieldAccess interface {
+	Field(int) Encodable
+}
+
 type Tuple struct {
 	Items []Encodable
 }
@@ -36,4 +40,12 @@ func (t *Tuple) UnmarshalSCALE(reader io.Reader) error {
 	}
 
 	return nil
+}
+
+func (t *Tuple) FieldAccess(at int) Encodable {
+	if at > len(t.Items)-1 {
+		panic(fmt.Sprintf("cannot access tuple item at: %d", at))
+	}
+
+	return t.Items[at]
 }

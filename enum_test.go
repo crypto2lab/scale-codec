@@ -1,6 +1,7 @@
 package scale_codec
 
 import (
+	"fmt"
 	"reflect"
 	"strings"
 	"testing"
@@ -29,6 +30,12 @@ func TestEnumParser(t *testing.T) {
 		J(Result<(uint64, bool), bool>)
 		K((Option<bool>, Result<bool, bool>))
 		L(Result<Option<(uint64, bool)>, uint64>)
+		M(Option<Nested>)
+		N(Result<Nested, bool>)
+		O(Result<bool, Nested>)
+		P(Result<Nested, Error>)
+		Q((Nested, uint64, Error))
+		R((Result<uint64, bool>, Option<uint64>, Error))
     }`
 
 	expectedEnum := []Enum{
@@ -67,8 +74,9 @@ func TestEnumParser(t *testing.T) {
 				},
 				{
 					Name:            "B",
-					Type:            "*scale_codec.Result",
-					TypeConstructor: "scale_codec.NewResult(new(scale_codec.Integer[uint64]),new(scale_codec.Integer[uint64]))",
+					Type:            "*scale_codec.ResultG[*scale_codec.Integer[uint64],*scale_codec.Integer[uint64]]",
+					TypeConstructor: "new(scale_codec.ResultG[*scale_codec.Integer[uint64],*scale_codec.Integer[uint64]])",
+					UnmarshalScale:  "return i.Inner.UnmarshalSCALE(reader, scale_codec.IntegerFromRawBytes[uint64], scale_codec.IntegerFromRawBytes[uint64])",
 				},
 				{
 					Name:            "C",
@@ -119,6 +127,42 @@ func TestEnumParser(t *testing.T) {
 					Type:            "*scale_codec.Result",
 					TypeConstructor: "scale_codec.NewResult(scale_codec.NewOption(scale_codec.NewTuple(new(scale_codec.Integer[uint64]),new(scale_codec.Bool))),new(scale_codec.Integer[uint64]))",
 				},
+				{
+					Name:            "M",
+					Type:            "*scale_codec.OptionG[Nested]",
+					TypeConstructor: "new(scale_codec.OptionG[Nested])",
+					UnmarshalScale:  "return i.Inner.UnmarshalSCALE(reader, UnmarshalNested)",
+				},
+				{
+					Name:            "N",
+					Type:            "*scale_codec.ResultG[Nested,*scale_codec.Bool]",
+					TypeConstructor: "new(scale_codec.ResultG[Nested,*scale_codec.Bool])",
+					UnmarshalScale:  "return i.Inner.UnmarshalSCALE(reader, UnmarshalNested, scale_codec.BoolFromRawBytes)",
+				},
+				{
+					Name:            "O",
+					Type:            "*scale_codec.ResultG[*scale_codec.Bool,Nested]",
+					TypeConstructor: "new(scale_codec.ResultG[*scale_codec.Bool,Nested])",
+					UnmarshalScale:  "return i.Inner.UnmarshalSCALE(reader, scale_codec.BoolFromRawBytes, UnmarshalNested)",
+				},
+				{
+					Name:            "P",
+					Type:            "*scale_codec.ResultG[Nested,Error]",
+					TypeConstructor: "new(scale_codec.ResultG[Nested,Error])",
+					UnmarshalScale:  "return i.Inner.UnmarshalSCALE(reader, UnmarshalNested, UnmarshalError)",
+				},
+				{
+					Name:            "Q",
+					Type:            "*T3[Nested,*scale_codec.Integer[uint64],Error]",
+					TypeConstructor: "new(T3[Nested,*scale_codec.Integer[uint64],Error])",
+					UnmarshalScale:  "return i.Inner.UnmarshalSCALE(reader,UnmarshalNested,scale_codec.IntegerFromRawBytes[uint64],UnmarshalError)",
+				},
+				{
+					Name:            "R",
+					Type:            "",
+					TypeConstructor: "",
+					UnmarshalScale:  "",
+				},
 			},
 		},
 	}
@@ -141,4 +185,6 @@ func TestEnumParser(t *testing.T) {
 			}
 		}
 	}
+
+	fmt.Println(GenericTuple)
 }

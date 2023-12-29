@@ -3,6 +3,7 @@ package scale_codec
 
 import (
     "fmt"
+    "strings"
 )
 
 type Enum struct {
@@ -17,13 +18,20 @@ type EnumField struct {
 	UnmarshalScale  string
 }
 
-var Enums []Enum
+var (
+    Enums []Enum
+
+    // map of tuple name and tuple qty of values
+    GenericTuple map[string]int = make(map[string]int)
+)
 
 %}
 
 %token ENUM
 %token IDENTIFIER
 %token TYPE
+%token RESULT
+%token OPTION
 
 %%
 
@@ -68,40 +76,72 @@ ComplexType: TYPE {
 
 
 Tuple: "(" TypeList ")" {
-    $$.sval = "scale_codec.NewTuple(" + $2.sval + ")"
-    $$.ttype = "*scale_codec.Tuple"
+    if hasGenericArgs($2.tupleValuesTypes) {
+        GenericTuple["T" + fmt.Sprint(len($2.tupleValuesTypes))] = len($2.tupleValuesTypes)
+        genericTuple := "T" + fmt.Sprint(len($2.tupleValuesTypes)) + "[" + strings.Join($2.tupleValuesTypes, ",") + "]"
+        $$.ttype = "*" + genericTuple
+        $$.sval = "new(" + genericTuple + ")"
+        $$.unmarshalScale = "return i.Inner.UnmarshalSCALE(reader," + strings.Join($2.tupleValuesUnmarshalScale, ",") + ")"
+    } else {
+        $$.sval = "scale_codec.NewTuple(" + $2.sval + ")"
+        $$.ttype = "*scale_codec.Tuple"
+    }
 };
 
-TypeList: ComplexType {
+TypeList: IDENTIFIER {
     $$.sval = $1.sval
+    $$.tupleValuesTypes = append($$.tupleValuesTypes, $1.sval)
+    $$.tupleValuesUnmarshalScale = append($$.tupleValuesUnmarshalScale, "Unmarshal"+$1.sval)
+} | ComplexType {
+    $$.sval = $1.sval
+    $$.tupleValuesTypes = append($$.tupleValuesTypes, $1.ttype)
+    $$.tupleValuesUnmarshalScale = append($$.tupleValuesUnmarshalScale, $1.fromRawBytesFunc)
+} | TypeList "," IDENTIFIER {
+    $$.sval += "," + $3.sval
+    $$.tupleValuesTypes = append($$.tupleValuesTypes, $3.sval)
+    $$.tupleValuesUnmarshalScale = append($$.tupleValuesUnmarshalScale, "Unmarshal"+$3.sval)
 } | TypeList "," ComplexType {
     $$.sval += "," + $3.sval
-} ;
+    $$.tupleValuesTypes = append($$.tupleValuesTypes, $3.ttype)
+    $$.tupleValuesUnmarshalScale = append($$.tupleValuesUnmarshalScale, $3.fromRawBytesFunc)
+};
 
-Option: TYPE "<" ComplexType ">" {
+Option: OPTION "<" ComplexType ">" {
     $$.sval = "scale_codec.NewOption(" + $3.sval + ")"
     $$.ttype = "*scale_codec.Option"
-} | TYPE "<" IDENTIFIER ">" {
+} | OPTION "<" IDENTIFIER ">" {
     $$.sval = "new(scale_codec.OptionG[" + $3.sval + "])"
     $$.ttype = "*scale_codec.OptionG[" + $3.sval + "]"
     $$.unmarshalScale  = "return i.Inner.UnmarshalSCALE(reader, Unmarshal" + $3.sval + ")"
 } ;
 
-Result: TYPE "<" ComplexType "," ComplexType ">" {
-    $$.sval = "scale_codec.NewResult(" + $3.sval + "," + $5.sval + ")"
-    $$.ttype = "*scale_codec.Result"
-} | TYPE "<" IDENTIFIER "," ComplexType ">" {
+Result: RESULT "<" ComplexType "," ComplexType ">" {
+    $$.sval = "new(scale_codec.ResultG[" + $3.ttype + "," + $5.ttype + "])"
+    $$.ttype = "*scale_codec.ResultG[" + $3.ttype + "," + $5.ttype +"]"
+    $$.unmarshalScale  = "return i.Inner.UnmarshalSCALE(reader, " + $3.fromRawBytesFunc + ", " + $5.fromRawBytesFunc + ")"
+} | RESULT "<" IDENTIFIER "," ComplexType ">" {
     $$.sval = "new(scale_codec.ResultG[" + $3.sval + "," + $5.ttype + "])"
     $$.ttype = "*scale_codec.ResultG[" + $3.sval + "," + $5.ttype +"]"
     $$.unmarshalScale  = "return i.Inner.UnmarshalSCALE(reader, Unmarshal" + $3.sval + ", " + $5.fromRawBytesFunc + ")"
-} | TYPE "<" ComplexType "," IDENTIFIER ">" {
+} | RESULT "<" ComplexType "," IDENTIFIER ">" {
     $$.sval = "new(scale_codec.ResultG[" + $3.ttype + "," + $5.sval + "])"
     $$.ttype = "*scale_codec.ResultG[" + $3.ttype + "," + $5.sval +"]"
     $$.unmarshalScale  = "return i.Inner.UnmarshalSCALE(reader, " + $3.fromRawBytesFunc + ", Unmarshal" + $5.sval + ")"
-} | TYPE "<" IDENTIFIER "," IDENTIFIER ">" {
+} | RESULT "<" IDENTIFIER "," IDENTIFIER ">" {
     $$.sval = "new(scale_codec.ResultG[" + $3.sval + "," + $5.sval + "])"
     $$.ttype = "*scale_codec.ResultG[" + $3.sval + "," + $5.sval +"]"
     $$.unmarshalScale  = "return i.Inner.UnmarshalSCALE(reader, Unmarshal" + $3.sval + ", Unmarshal" + $5.sval + ")"
 } ;
 
 %%
+
+func hasGenericArgs(args []string) bool {
+    for _, input := range args {
+        if !strings.HasPrefix(input, "*"){
+            return true
+        }
+    }
+
+    return false
+}
+
