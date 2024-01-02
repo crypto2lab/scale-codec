@@ -32,66 +32,68 @@ func TestSimpleEnumMarshaler(t *testing.T) {
 		},
 		{
 			marshaler: &A{
-				Inner: scale_codec.Some(&scale_codec.Bool{Value: true}),
+				Inner: scale_codec.SomeG[*scale_codec.Bool](&scale_codec.Bool{Value: true}),
 			},
 			expectedBytes: []byte{3, 1, 1},
 		},
 		{
 			marshaler: &A{
-				Inner: scale_codec.None(),
+				Inner: scale_codec.NoneG[*scale_codec.Bool](),
 			},
 			expectedBytes: []byte{3, 0},
 		},
 		{
 			marshaler: &B{
-				Inner: scale_codec.Ok(&scale_codec.Integer[uint64]{Value: 108}),
+				Inner: scale_codec.OkG[*scale_codec.Integer[uint64], *scale_codec.Integer[uint64]](
+					&scale_codec.Integer[uint64]{Value: 108}),
 			},
 			expectedBytes: []byte{4, 0, 108, 0, 0, 0, 0, 0, 0, 0},
 		},
 		{
 			expectedBytes: []byte{4, 1, 90, 0, 0, 0, 0, 0, 0, 0},
 			marshaler: &B{
-				Inner: scale_codec.Err(&scale_codec.Integer[uint64]{Value: 90}),
+				Inner: scale_codec.ErrG[*scale_codec.Integer[uint64], *scale_codec.Integer[uint64]](
+					&scale_codec.Integer[uint64]{Value: 90}),
 			},
 		},
 		{
 			expectedBytes: []byte{5, 60, 0, 0, 0, 0, 0, 0, 0, 0},
 			marshaler: &G{
-				Inner: scale_codec.NewTuple(
-					&scale_codec.Integer[uint64]{60},
-					&scale_codec.Bool{false},
-				),
+				Inner: &T2[*scale_codec.Integer[uint64], *scale_codec.Bool]{
+					F0: &scale_codec.Integer[uint64]{Value: 60},
+					F1: &scale_codec.Bool{Value: false},
+				},
 			},
 		},
 		{
 			expectedBytes: []byte{6, 1, 60, 0, 0, 0, 0, 0, 0, 0, 0},
 			marshaler: &H{
-				Inner: scale_codec.Some(
-					scale_codec.NewTuple(
-						&scale_codec.Integer[uint64]{60},
-						&scale_codec.Bool{false},
-					),
+				Inner: scale_codec.SomeG[*T2[*scale_codec.Integer[uint64], *scale_codec.Bool]](
+					&T2[*scale_codec.Integer[uint64], *scale_codec.Bool]{
+						F0: &scale_codec.Integer[uint64]{60},
+						F1: &scale_codec.Bool{false},
+					},
 				),
 			},
 		},
 		{
 			expectedBytes: []byte{7, 0, 60, 0, 0, 0, 0, 0, 0, 0, 0},
 			marshaler: &J{
-				Inner: scale_codec.Ok(
-					scale_codec.NewTuple(
-						&scale_codec.Integer[uint64]{60},
-						&scale_codec.Bool{false},
-					),
+				Inner: scale_codec.OkG[*T2[*scale_codec.Integer[uint64], *scale_codec.Bool], *scale_codec.Bool](
+					&T2[*scale_codec.Integer[uint64], *scale_codec.Bool]{
+						F0: &scale_codec.Integer[uint64]{60},
+						F1: &scale_codec.Bool{false},
+					},
 				),
 			},
 		},
 		{
 			expectedBytes: []byte{8, 1, 1, 0, 0},
 			marshaler: &K{
-				Inner: scale_codec.NewTuple(
-					scale_codec.Some(&scale_codec.Bool{Value: true}),
-					scale_codec.Ok(&scale_codec.Bool{Value: false}),
-				),
+				Inner: &T2[*scale_codec.OptionG[*scale_codec.Bool], *scale_codec.ResultG[*scale_codec.Bool, *scale_codec.Bool]]{
+					F0: scale_codec.SomeG[*scale_codec.Bool](&scale_codec.Bool{Value: true}),
+					F1: scale_codec.OkG[*scale_codec.Bool, *scale_codec.Bool](&scale_codec.Bool{Value: false}),
+				},
 			},
 		},
 		{
@@ -198,65 +200,65 @@ func TestSimpleEnumUnmarshaler(t *testing.T) {
 		{
 			inputBytes: []byte{3, 1, 1},
 			expectedVariant: &A{
-				Inner: scale_codec.Some(&scale_codec.Bool{Value: true}),
+				Inner: scale_codec.SomeG[*scale_codec.Bool](&scale_codec.Bool{Value: true}),
 			},
 		},
 		{
 			inputBytes: []byte{3, 0},
 			expectedVariant: &A{
-				Inner: scale_codec.None(),
+				Inner: scale_codec.NoneG[*scale_codec.Bool](),
 			},
 		},
 		{
 			inputBytes: []byte{4, 0, 108, 0, 0, 0, 0, 0, 0, 0},
 			expectedVariant: &B{
-				Inner: scale_codec.Ok(&scale_codec.Integer[uint64]{Value: 108}),
+				Inner: scale_codec.OkG[*scale_codec.Integer[uint64], *scale_codec.Integer[uint64]](&scale_codec.Integer[uint64]{Value: 108}),
 			},
 		},
 		{
 			inputBytes: []byte{4, 1, 90, 0, 0, 0, 0, 0, 0, 0},
 			expectedVariant: &B{
-				Inner: scale_codec.Err(&scale_codec.Integer[uint64]{Value: 90}),
+				Inner: scale_codec.ErrG[*scale_codec.Integer[uint64], *scale_codec.Integer[uint64]](&scale_codec.Integer[uint64]{Value: 90}),
 			},
 		},
 		{
 			inputBytes: []byte{5, 60, 0, 0, 0, 0, 0, 0, 0, 0},
 			expectedVariant: &G{
-				Inner: scale_codec.NewTuple(
-					&scale_codec.Integer[uint64]{60},
-					&scale_codec.Bool{false},
-				),
+				Inner: &T2[*scale_codec.Integer[uint64], *scale_codec.Bool]{
+					F0: &scale_codec.Integer[uint64]{60},
+					F1: &scale_codec.Bool{false},
+				},
 			},
 		},
 		{
 			inputBytes: []byte{6, 1, 60, 0, 0, 0, 0, 0, 0, 0, 0},
 			expectedVariant: &H{
-				Inner: scale_codec.Some(
-					scale_codec.NewTuple(
-						&scale_codec.Integer[uint64]{60},
-						&scale_codec.Bool{false},
-					),
+				Inner: scale_codec.SomeG[*T2[*scale_codec.Integer[uint64], *scale_codec.Bool]](
+					&T2[*scale_codec.Integer[uint64], *scale_codec.Bool]{
+						F0: &scale_codec.Integer[uint64]{60},
+						F1: &scale_codec.Bool{false},
+					},
 				),
 			},
 		},
 		{
 			inputBytes: []byte{7, 0, 60, 0, 0, 0, 0, 0, 0, 0, 0},
 			expectedVariant: &J{
-				Inner: scale_codec.Ok(
-					scale_codec.NewTuple(
-						&scale_codec.Integer[uint64]{60},
-						&scale_codec.Bool{false},
-					),
+				Inner: scale_codec.OkG[*T2[*scale_codec.Integer[uint64], *scale_codec.Bool], *scale_codec.Bool](
+					&T2[*scale_codec.Integer[uint64], *scale_codec.Bool]{
+						F0: &scale_codec.Integer[uint64]{60},
+						F1: &scale_codec.Bool{false},
+					},
 				),
 			},
 		},
 		{
 			inputBytes: []byte{8, 1, 1, 0, 0},
 			expectedVariant: &K{
-				Inner: scale_codec.NewTuple(
-					scale_codec.Some(&scale_codec.Bool{Value: true}),
-					scale_codec.Ok(&scale_codec.Bool{Value: false}),
-				),
+				Inner: &T2[*scale_codec.OptionG[*scale_codec.Bool], *scale_codec.ResultG[*scale_codec.Bool, *scale_codec.Bool]]{
+					F0: scale_codec.SomeG[*scale_codec.Bool](&scale_codec.Bool{Value: true}),
+					F1: scale_codec.OkG[*scale_codec.Bool, *scale_codec.Bool](&scale_codec.Bool{Value: false}),
+				},
 			},
 		},
 		{

@@ -538,16 +538,14 @@ yydefault:
 	case 12:
 		yyDollar = yyS[yypt-3 : yypt+1]
 		{
-			if hasGenericArgs(yyDollar[2].tupleValuesTypes) {
-				GenericTuple["T"+fmt.Sprint(len(yyDollar[2].tupleValuesTypes))] = len(yyDollar[2].tupleValuesTypes)
-				genericTuple := "T" + fmt.Sprint(len(yyDollar[2].tupleValuesTypes)) + "[" + strings.Join(yyDollar[2].tupleValuesTypes, ",") + "]"
-				yyVAL.ttype = "*" + genericTuple
-				yyVAL.sval = "new(" + genericTuple + ")"
-				yyVAL.unmarshalScale = "return i.Inner.UnmarshalSCALE(reader," + strings.Join(yyDollar[2].tupleValuesUnmarshalScale, ",") + ")"
-			} else {
-				yyVAL.sval = "scale_codec.NewTuple(" + yyDollar[2].sval + ")"
-				yyVAL.ttype = "*scale_codec.Tuple"
-			}
+			GenericTuple["T"+fmt.Sprint(len(yyDollar[2].tupleValuesTypes))] = len(yyDollar[2].tupleValuesTypes)
+			genericTuple := "T" + fmt.Sprint(len(yyDollar[2].tupleValuesTypes)) + "[" + strings.Join(yyDollar[2].tupleValuesTypes, ",") + "]"
+			yyVAL.ttype = "*" + genericTuple
+			yyVAL.sval = "new(" + genericTuple + ")"
+			yyVAL.fromRawBytesFunc = "UnmarshalT" + fmt.Sprint(len(yyDollar[2].tupleValuesTypes)) +
+				"FromRawBytes[" + strings.Join(yyDollar[2].tupleValuesTypes, ",") +
+				"](" + strings.Join(yyDollar[2].tupleValuesUnmarshalScale, ",") + ")"
+			yyVAL.unmarshalScale = "return i.Inner.UnmarshalSCALE(reader," + strings.Join(yyDollar[2].tupleValuesUnmarshalScale, ",") + ")"
 		}
 	case 13:
 		yyDollar = yyS[yypt-1 : yypt+1]
@@ -580,14 +578,17 @@ yydefault:
 	case 17:
 		yyDollar = yyS[yypt-4 : yypt+1]
 		{
-			yyVAL.sval = "scale_codec.NewOption(" + yyDollar[3].sval + ")"
-			yyVAL.ttype = "*scale_codec.Option"
+			yyVAL.sval = "new(scale_codec.OptionG[" + yyDollar[3].ttype + "])"
+			yyVAL.ttype = "*scale_codec.OptionG[" + yyDollar[3].ttype + "]"
+			yyVAL.fromRawBytesFunc = "scale_codec.UnmarshalOptionFromRawBytes[" + yyDollar[3].ttype + "](" + yyDollar[3].fromRawBytesFunc + ")"
+			yyVAL.unmarshalScale = "return i.Inner.UnmarshalSCALE(reader," + yyDollar[3].fromRawBytesFunc + ")"
 		}
 	case 18:
 		yyDollar = yyS[yypt-4 : yypt+1]
 		{
 			yyVAL.sval = "new(scale_codec.OptionG[" + yyDollar[3].sval + "])"
 			yyVAL.ttype = "*scale_codec.OptionG[" + yyDollar[3].sval + "]"
+			yyVAL.fromRawBytesFunc = "scale_codec.UnmarshalOptionFromRawBytes[" + yyDollar[3].sval + "](Unmarshal" + yyDollar[3].sval + ")"
 			yyVAL.unmarshalScale = "return i.Inner.UnmarshalSCALE(reader, Unmarshal" + yyDollar[3].sval + ")"
 		}
 	case 19:
@@ -595,6 +596,8 @@ yydefault:
 		{
 			yyVAL.sval = "new(scale_codec.ResultG[" + yyDollar[3].ttype + "," + yyDollar[5].ttype + "])"
 			yyVAL.ttype = "*scale_codec.ResultG[" + yyDollar[3].ttype + "," + yyDollar[5].ttype + "]"
+			yyVAL.fromRawBytesFunc = "scale_codec.UnmarshalResultFromRawBytes[" +
+				yyDollar[3].ttype + "," + yyDollar[5].ttype + "](" + yyDollar[3].fromRawBytesFunc + "," + yyDollar[5].fromRawBytesFunc + ")"
 			yyVAL.unmarshalScale = "return i.Inner.UnmarshalSCALE(reader, " + yyDollar[3].fromRawBytesFunc + ", " + yyDollar[5].fromRawBytesFunc + ")"
 		}
 	case 20:
@@ -602,6 +605,8 @@ yydefault:
 		{
 			yyVAL.sval = "new(scale_codec.ResultG[" + yyDollar[3].sval + "," + yyDollar[5].ttype + "])"
 			yyVAL.ttype = "*scale_codec.ResultG[" + yyDollar[3].sval + "," + yyDollar[5].ttype + "]"
+			yyVAL.fromRawBytesFunc = "scale_codec.UnmarshalResultFromRawBytes[" +
+				yyDollar[3].sval + "," + yyDollar[5].ttype + "](Unmarshal" + yyDollar[3].sval + "," + yyDollar[5].fromRawBytesFunc + ")"
 			yyVAL.unmarshalScale = "return i.Inner.UnmarshalSCALE(reader, Unmarshal" + yyDollar[3].sval + ", " + yyDollar[5].fromRawBytesFunc + ")"
 		}
 	case 21:
@@ -609,6 +614,8 @@ yydefault:
 		{
 			yyVAL.sval = "new(scale_codec.ResultG[" + yyDollar[3].ttype + "," + yyDollar[5].sval + "])"
 			yyVAL.ttype = "*scale_codec.ResultG[" + yyDollar[3].ttype + "," + yyDollar[5].sval + "]"
+			yyVAL.fromRawBytesFunc = "scale_codec.UnmarshalResultFromRawBytes[" +
+				yyDollar[3].ttype + "," + yyDollar[5].sval + "](" + yyDollar[3].fromRawBytesFunc + ",Unmarshal" + yyDollar[5].sval + ")"
 			yyVAL.unmarshalScale = "return i.Inner.UnmarshalSCALE(reader, " + yyDollar[3].fromRawBytesFunc + ", Unmarshal" + yyDollar[5].sval + ")"
 		}
 	case 22:
@@ -616,6 +623,8 @@ yydefault:
 		{
 			yyVAL.sval = "new(scale_codec.ResultG[" + yyDollar[3].sval + "," + yyDollar[5].sval + "])"
 			yyVAL.ttype = "*scale_codec.ResultG[" + yyDollar[3].sval + "," + yyDollar[5].sval + "]"
+			yyVAL.fromRawBytesFunc = "scale_codec.UnmarshalResultFromRawBytes[" +
+				yyDollar[3].sval + "," + yyDollar[5].sval + "](Unmarshal" + yyDollar[3].sval + ",Unmarshal" + yyDollar[5].sval + ")"
 			yyVAL.unmarshalScale = "return i.Inner.UnmarshalSCALE(reader, Unmarshal" + yyDollar[3].sval + ", Unmarshal" + yyDollar[5].sval + ")"
 		}
 	}

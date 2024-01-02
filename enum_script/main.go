@@ -158,7 +158,7 @@ func parseGenericTupleDefinitions(genericTuples map[string]int) string {
 
 		generics := alphabet[0:arity]
 		genericArity := parseMap(generics, func(_ int, s string) string {
-			return fmt.Sprintf("%s scale_codec.Encodable",
+			return fmt.Sprintf("%s scale_codec.Marshaler",
 				strings.ToUpper(string(s)))
 		})
 
@@ -356,4 +356,18 @@ func (t *{{ .GenericTupleName }}[{{ .GenericNames }}]) UnmarshalSCALE(reader io.
 	}
 	{{ end }}
 	return nil
+}
+
+func Unmarshal{{.GenericTupleName}}FromRawBytes[{{ .GenericArity }}](
+	{{ .UnmarshalFuncSignatures }}) func(io.Reader) (*{{ .GenericTupleName }}[{{ .GenericNames }}], error) {
+	return func(reader io.Reader) (*{{ .GenericTupleName }}[{{ .GenericNames }}], error) {
+		tuple := new({{.GenericTupleName}}[{{ .GenericNames }}])
+		err := tuple.UnmarshalSCALE(reader,{{ range $func, $field := .FuncsAndFields }}
+			{{ $func }},{{ end }})
+		
+		if err != nil {
+			return nil, err
+		}
+		return tuple, nil
+	}
 }`

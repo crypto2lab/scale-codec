@@ -9,6 +9,59 @@ import (
 	scale_codec "github.com/crypto2lab/scale-codec"
 )
 
+type T2[A scale_codec.Marshaler,B scale_codec.Marshaler] struct {
+	F0 A
+	F1 B
+}
+
+func (t *T2[A,B]) MarshalSCALE() (output []byte, err error) {
+	output = make([]byte, 0)
+	var enc []byte
+	
+	enc, err = t.F0.MarshalSCALE()
+	if err != nil {
+		return nil, err
+	}
+	output = append(output, enc...)
+	
+	enc, err = t.F1.MarshalSCALE()
+	if err != nil {
+		return nil, err
+	}
+	output = append(output, enc...)
+	
+	return output, nil
+}
+
+func (t *T2[A,B]) UnmarshalSCALE(reader io.Reader, funcA func (io.Reader) (A, error),funcB func (io.Reader) (B, error)) (err error) {
+	
+	t.F0, err =  funcA(reader)
+	if err != nil {
+		return err
+	}
+	
+	t.F1, err =  funcB(reader)
+	if err != nil {
+		return err
+	}
+	
+	return nil
+}
+
+func UnmarshalT2FromRawBytes[A scale_codec.Marshaler,B scale_codec.Marshaler](
+	funcA func (io.Reader) (A, error),funcB func (io.Reader) (B, error)) func(io.Reader) (*T2[A,B], error) {
+	return func(reader io.Reader) (*T2[A,B], error) {
+		tuple := new(T2[A,B])
+		err := tuple.UnmarshalSCALE(reader,
+			funcA,
+			funcB,)
+		
+		if err != nil {
+			return nil, err
+		}
+		return tuple, nil
+	}
+}
 type T3[A scale_codec.Marshaler,B scale_codec.Marshaler,C scale_codec.Marshaler] struct {
 	F0 A
 	F1 B
@@ -58,6 +111,22 @@ func (t *T3[A,B,C]) UnmarshalSCALE(reader io.Reader, funcA func (io.Reader) (A, 
 	}
 	
 	return nil
+}
+
+func UnmarshalT3FromRawBytes[A scale_codec.Marshaler,B scale_codec.Marshaler,C scale_codec.Marshaler](
+	funcA func (io.Reader) (A, error),funcB func (io.Reader) (B, error),funcC func (io.Reader) (C, error)) func(io.Reader) (*T3[A,B,C], error) {
+	return func(reader io.Reader) (*T3[A,B,C], error) {
+		tuple := new(T3[A,B,C])
+		err := tuple.UnmarshalSCALE(reader,
+			funcA,
+			funcB,
+			funcC,)
+		
+		if err != nil {
+			return nil, err
+		}
+		return tuple, nil
+	}
 }
 
 
@@ -259,6 +328,14 @@ func UnmarshalMyScaleEncodedEnum(reader io.Reader) (MyScaleEncodedEnum, error) {
 		}
 		return unmarshaler, err
 	
+	case RIndex:
+		unmarshaler := NewR()
+		err := unmarshaler.UnmarshalSCALE(reader)
+		if err != nil {
+			return nil, err
+		}
+		return unmarshaler, err
+	
 	default:
 		return nil, fmt.Errorf("unexpected enum tag: %v", enumTag[0])
 	}
@@ -415,12 +492,12 @@ var AIndex byte = 3
 var _ MyScaleEncodedEnum = (*A)(nil)
 
 type A struct {
-	Inner *scale_codec.Option
+	Inner *scale_codec.OptionG[*scale_codec.Bool]
 }
 
 func NewA() *A {
 	return &A{
-		Inner: scale_codec.NewOption(new(scale_codec.Bool)),
+		Inner: new(scale_codec.OptionG[*scale_codec.Bool]),
 	}
 }
 
@@ -437,19 +514,19 @@ func (i A) MarshalSCALE() ([]byte, error) {
 }
 
 func (i *A) UnmarshalSCALE(reader io.Reader) error {
-	return i.Inner.UnmarshalSCALE(reader)
+	return i.Inner.UnmarshalSCALE(reader,scale_codec.BoolFromRawBytes)
 }
 var BIndex byte = 4
 
 var _ MyScaleEncodedEnum = (*B)(nil)
 
 type B struct {
-	Inner *scale_codec.Result
+	Inner *scale_codec.ResultG[*scale_codec.Integer[uint64],*scale_codec.Integer[uint64]]
 }
 
 func NewB() *B {
 	return &B{
-		Inner: scale_codec.NewResult(new(scale_codec.Integer[uint64]),new(scale_codec.Integer[uint64])),
+		Inner: new(scale_codec.ResultG[*scale_codec.Integer[uint64],*scale_codec.Integer[uint64]]),
 	}
 }
 
@@ -466,19 +543,19 @@ func (i B) MarshalSCALE() ([]byte, error) {
 }
 
 func (i *B) UnmarshalSCALE(reader io.Reader) error {
-	return i.Inner.UnmarshalSCALE(reader)
+	return i.Inner.UnmarshalSCALE(reader, scale_codec.IntegerFromRawBytes[uint64], scale_codec.IntegerFromRawBytes[uint64])
 }
 var GIndex byte = 5
 
 var _ MyScaleEncodedEnum = (*G)(nil)
 
 type G struct {
-	Inner *scale_codec.Tuple
+	Inner *T2[*scale_codec.Integer[uint64],*scale_codec.Bool]
 }
 
 func NewG() *G {
 	return &G{
-		Inner: scale_codec.NewTuple(new(scale_codec.Integer[uint64]),new(scale_codec.Bool)),
+		Inner: new(T2[*scale_codec.Integer[uint64],*scale_codec.Bool]),
 	}
 }
 
@@ -495,19 +572,19 @@ func (i G) MarshalSCALE() ([]byte, error) {
 }
 
 func (i *G) UnmarshalSCALE(reader io.Reader) error {
-	return i.Inner.UnmarshalSCALE(reader)
+	return i.Inner.UnmarshalSCALE(reader,scale_codec.IntegerFromRawBytes[uint64],scale_codec.BoolFromRawBytes)
 }
 var HIndex byte = 6
 
 var _ MyScaleEncodedEnum = (*H)(nil)
 
 type H struct {
-	Inner *scale_codec.Option
+	Inner *scale_codec.OptionG[*T2[*scale_codec.Integer[uint64],*scale_codec.Bool]]
 }
 
 func NewH() *H {
 	return &H{
-		Inner: scale_codec.NewOption(scale_codec.NewTuple(new(scale_codec.Integer[uint64]),new(scale_codec.Bool))),
+		Inner: new(scale_codec.OptionG[*T2[*scale_codec.Integer[uint64],*scale_codec.Bool]]),
 	}
 }
 
@@ -524,19 +601,19 @@ func (i H) MarshalSCALE() ([]byte, error) {
 }
 
 func (i *H) UnmarshalSCALE(reader io.Reader) error {
-	return i.Inner.UnmarshalSCALE(reader)
+	return i.Inner.UnmarshalSCALE(reader,UnmarshalT2FromRawBytes[*scale_codec.Integer[uint64],*scale_codec.Bool](scale_codec.IntegerFromRawBytes[uint64],scale_codec.BoolFromRawBytes))
 }
 var JIndex byte = 7
 
 var _ MyScaleEncodedEnum = (*J)(nil)
 
 type J struct {
-	Inner *scale_codec.Result
+	Inner *scale_codec.ResultG[*T2[*scale_codec.Integer[uint64],*scale_codec.Bool],*scale_codec.Bool]
 }
 
 func NewJ() *J {
 	return &J{
-		Inner: scale_codec.NewResult(scale_codec.NewTuple(new(scale_codec.Integer[uint64]),new(scale_codec.Bool)),new(scale_codec.Bool)),
+		Inner: new(scale_codec.ResultG[*T2[*scale_codec.Integer[uint64],*scale_codec.Bool],*scale_codec.Bool]),
 	}
 }
 
@@ -553,19 +630,19 @@ func (i J) MarshalSCALE() ([]byte, error) {
 }
 
 func (i *J) UnmarshalSCALE(reader io.Reader) error {
-	return i.Inner.UnmarshalSCALE(reader)
+	return i.Inner.UnmarshalSCALE(reader, UnmarshalT2FromRawBytes[*scale_codec.Integer[uint64],*scale_codec.Bool](scale_codec.IntegerFromRawBytes[uint64],scale_codec.BoolFromRawBytes), scale_codec.BoolFromRawBytes)
 }
 var KIndex byte = 8
 
 var _ MyScaleEncodedEnum = (*K)(nil)
 
 type K struct {
-	Inner *scale_codec.Tuple
+	Inner *T2[*scale_codec.OptionG[*scale_codec.Bool],*scale_codec.ResultG[*scale_codec.Bool,*scale_codec.Bool]]
 }
 
 func NewK() *K {
 	return &K{
-		Inner: scale_codec.NewTuple(scale_codec.NewOption(new(scale_codec.Bool)),scale_codec.NewResult(new(scale_codec.Bool),new(scale_codec.Bool))),
+		Inner: new(T2[*scale_codec.OptionG[*scale_codec.Bool],*scale_codec.ResultG[*scale_codec.Bool,*scale_codec.Bool]]),
 	}
 }
 
@@ -582,19 +659,19 @@ func (i K) MarshalSCALE() ([]byte, error) {
 }
 
 func (i *K) UnmarshalSCALE(reader io.Reader) error {
-	return i.Inner.UnmarshalSCALE(reader)
+	return i.Inner.UnmarshalSCALE(reader,scale_codec.UnmarshalOptionFromRawBytes[*scale_codec.Bool](scale_codec.BoolFromRawBytes),scale_codec.UnmarshalResultFromRawBytes[*scale_codec.Bool,*scale_codec.Bool](scale_codec.BoolFromRawBytes,scale_codec.BoolFromRawBytes))
 }
 var LIndex byte = 9
 
 var _ MyScaleEncodedEnum = (*L)(nil)
 
 type L struct {
-	Inner *scale_codec.Result
+	Inner *scale_codec.ResultG[*scale_codec.OptionG[*T2[*scale_codec.Integer[uint64],*scale_codec.Bool]],*scale_codec.Integer[uint64]]
 }
 
 func NewL() *L {
 	return &L{
-		Inner: scale_codec.NewResult(scale_codec.NewOption(scale_codec.NewTuple(new(scale_codec.Integer[uint64]),new(scale_codec.Bool))),new(scale_codec.Integer[uint64])),
+		Inner: new(scale_codec.ResultG[*scale_codec.OptionG[*T2[*scale_codec.Integer[uint64],*scale_codec.Bool]],*scale_codec.Integer[uint64]]),
 	}
 }
 
@@ -611,7 +688,7 @@ func (i L) MarshalSCALE() ([]byte, error) {
 }
 
 func (i *L) UnmarshalSCALE(reader io.Reader) error {
-	return i.Inner.UnmarshalSCALE(reader)
+	return i.Inner.UnmarshalSCALE(reader, scale_codec.UnmarshalOptionFromRawBytes[*T2[*scale_codec.Integer[uint64],*scale_codec.Bool]](UnmarshalT2FromRawBytes[*scale_codec.Integer[uint64],*scale_codec.Bool](scale_codec.IntegerFromRawBytes[uint64],scale_codec.BoolFromRawBytes)), scale_codec.IntegerFromRawBytes[uint64])
 }
 var MIndex byte = 10
 
@@ -758,18 +835,17 @@ func (i Q) MarshalSCALE() ([]byte, error) {
 func (i *Q) UnmarshalSCALE(reader io.Reader) error {
 	return i.Inner.UnmarshalSCALE(reader,UnmarshalNested,scale_codec.IntegerFromRawBytes[uint64],UnmarshalError)
 }
-
 var RIndex byte = 15
 
-var _ MyScaleEncodedEnum = (*Q)(nil)
+var _ MyScaleEncodedEnum = (*R)(nil)
 
 type R struct {
-	Inner *T3[*scale_codec.ResultG[*scale_codec.Integer[uint64],*scale_codec.Bool],*scale_codec.OptionG[*scale_codec.Bool],Error]
+	Inner *T3[*scale_codec.ResultG[*scale_codec.Integer[uint64],*scale_codec.Bool],*scale_codec.OptionG[*scale_codec.Integer[uint64]],Error]
 }
 
 func NewR() *R {
 	return &R{
-		Inner: new(T3[*scale_codec.ResultG[*scale_codec.Integer[uint64],*scale_codec.Bool],*scale_codec.OptionG[*scale_codec.Bool],Error]),
+		Inner: new(T3[*scale_codec.ResultG[*scale_codec.Integer[uint64],*scale_codec.Bool],*scale_codec.OptionG[*scale_codec.Integer[uint64]],Error]),
 	}
 }
 
@@ -781,16 +857,10 @@ func (i R) MarshalSCALE() ([]byte, error) {
 		return nil, err
 	}
 
-	idx := QIndex
+	idx := RIndex
 	return bytes.Join([][]byte{[]byte{idx}, innerEncode}, nil), nil
 }
 
 func (i *R) UnmarshalSCALE(reader io.Reader) error {
-
-	return i.Inner.UnmarshalSCALE(reader, 
-		scale_codec.UnmarshalResultFromRawBytes[*scale_codec.Integer[uint64],*scale_codec.Bool](
-			scale_codec.IntegerFromRawBytes[uint64], 
-			scale_codec.BoolFromRawBytes),
-		scale_codec.UnmarshalOptionFromRawBytes[*scale_codec.Bool](scale_codec.BoolFromRawBytes),
-		UnmarshalError)
+	return i.Inner.UnmarshalSCALE(reader,scale_codec.UnmarshalResultFromRawBytes[*scale_codec.Integer[uint64],*scale_codec.Bool](scale_codec.IntegerFromRawBytes[uint64],scale_codec.BoolFromRawBytes),scale_codec.UnmarshalOptionFromRawBytes[*scale_codec.Integer[uint64]](scale_codec.IntegerFromRawBytes[uint64]),UnmarshalError)
 }

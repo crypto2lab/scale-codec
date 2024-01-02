@@ -8,12 +8,12 @@ import (
 
 var NoneEncoded = []byte{0x00}
 
-type OptionG[T Encodable] struct {
+type OptionG[T Marshaler] struct {
 	inner  T
 	isNone bool
 }
 
-func UnmarshalOptionFromRawBytes[T Encodable](
+func UnmarshalOptionFromRawBytes[T Marshaler](
 	f func(io.Reader) (T, error)) func(reader io.Reader) (*OptionG[T], error) {
 	return func(reader io.Reader) (*OptionG[T], error) {
 		option := &OptionG[T]{}
@@ -68,11 +68,11 @@ func (o *OptionG[T]) UnmarshalSCALE(reader io.Reader, f func(io.Reader) (T, erro
 	}
 }
 
-func SomeG[T Encodable](inner T) *OptionG[T] {
+func SomeG[T Marshaler](inner T) *OptionG[T] {
 	return &OptionG[T]{inner, false}
 }
 
-func NoneG[T Encodable]() *OptionG[T] {
+func NoneG[T Marshaler]() *OptionG[T] {
 	return &OptionG[T]{
 		isNone: true,
 	}

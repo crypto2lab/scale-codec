@@ -6,7 +6,7 @@ import (
 	"io"
 )
 
-type ResultG[T Encodable, E Encodable] struct {
+type ResultG[T Marshaler, E Marshaler] struct {
 	ok   T
 	isOk bool
 
@@ -14,7 +14,7 @@ type ResultG[T Encodable, E Encodable] struct {
 	isErr bool
 }
 
-func UnmarshalResultFromRawBytes[T Encodable, E Encodable](
+func UnmarshalResultFromRawBytes[T Marshaler, E Marshaler](
 	okF func(io.Reader) (T, error),
 	errF func(io.Reader) (E, error)) func(reader io.Reader) (*ResultG[T, E], error) {
 	return func(reader io.Reader) (*ResultG[T, E], error) {
@@ -84,14 +84,14 @@ func (r *ResultG[T, E]) UnmarshalSCALE(reader io.Reader,
 	return nil
 }
 
-func OkG[T Encodable, E Encodable](ok T) *ResultG[T, E] {
+func OkG[T Marshaler, E Marshaler](ok T) *ResultG[T, E] {
 	return &ResultG[T, E]{
 		isOk: true,
 		ok:   ok,
 	}
 }
 
-func ErrG[T Encodable, E Encodable](err E) *ResultG[T, E] {
+func ErrG[T Marshaler, E Marshaler](err E) *ResultG[T, E] {
 	return &ResultG[T, E]{
 		isErr: true,
 		err:   err,
