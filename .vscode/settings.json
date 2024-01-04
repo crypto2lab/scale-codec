@@ -1,0 +1,6 @@
+{
+    "rust-analyzer.linkedProjects": [
+        "./tests/rust-scale-codec/Cargo.toml"
+    ],
+    "rust-analyzer.showUnlinkedFileNotification": false
+}

@@ -1,8 +1,5 @@
-use parity_scale_codec;
-
-fn main() {
-    println!("Hello, world!");
-}
+use parity_scale_codec::{self, Error};
+fn main() {}
 
 #[cfg(test)]
 mod tests {
@@ -96,64 +93,64 @@ mod tests {
 
     #[test]
     fn scale_encode_enum() {
-        // let a: ToTest = ToTest::Single;
-        // println!("{:?}", a.encode());
+        let a: ToTest = ToTest::Single;
+        println!("{:?}", a.encode());
 
-        // let a: ToTest = ToTest::Int(32);
-        // println!("{:?}", a.encode());
+        let a: ToTest = ToTest::Int(32);
+        println!("{:?}", a.encode());
 
-        // let a: ToTest = ToTest::Bool(true);
-        // println!("{:?}", a.encode());
+        let a: ToTest = ToTest::Bool(true);
+        println!("{:?}", a.encode());
 
-        // let a: ToTest = ToTest::A(Some(true));
-        // println!("{:?}", a.encode());
+        let a: ToTest = ToTest::A(Some(true));
+        println!("{:?}", a.encode());
 
-        // let a: ToTest = ToTest::A(None);
-        // println!("{:?}", a.encode());
+        let a: ToTest = ToTest::A(None);
+        println!("{:?}", a.encode());
 
-        // let a: ToTest = ToTest::B(Ok(108));
-        // println!("{:?}", a.encode());
+        let a: ToTest = ToTest::B(Ok(108));
+        println!("{:?}", a.encode());
 
-        // let a: ToTest = ToTest::B(Err(90));
-        // println!("{:?}", a.encode());
+        let a: ToTest = ToTest::B(Err(90));
+        println!("{:?}", a.encode());
 
-        // let a: ToTest = ToTest::G((60, false));
-        // println!("{:?}", a.encode());
+        let a: ToTest = ToTest::G((60, false));
+        println!("{:?}", a.encode());
 
-        // let a: ToTest = ToTest::H(Some((60, false)));
-        // println!("{:?}", a.encode());
+        let a: ToTest = ToTest::H(Some((60, false)));
+        println!("{:?}", a.encode());
 
-        // let a: ToTest = ToTest::J(Ok((60, false)));
-        // println!("{:?}", a.encode());
+        let a: ToTest = ToTest::J(Ok((60, false)));
+        println!("{:?}", a.encode());
 
-        // let a: ToTest = ToTest::K((Some(true), Ok(false)));
-        // println!("{:?}", a.encode());
+        let a: ToTest = ToTest::K((Some(true), Ok(false)));
+        println!("{:?}", a.encode());
 
-        // let a: ToTest = ToTest::M(Some(Nested::SimpleN(10)));
-        // println!("{:?}", a.encode());
+        let a: ToTest = ToTest::M(Some(Nested::SimpleN(10)));
+        println!("{:?}", a.encode());
 
-        // let a: ToTest = ToTest::N(Ok(Nested::SimpleN(78)));
-        // println!("{:?}", a.encode());
+        let a: ToTest = ToTest::N(Ok(Nested::SimpleN(78)));
+        println!("{:?}", a.encode());
 
-        // let a: ToTest = ToTest::N(Err(true));
-        // println!("{:?}", a.encode());
+        let a: ToTest = ToTest::N(Err(true));
+        println!("{:?}", a.encode());
 
-        // let a: ToTest = ToTest::O(Ok(true));
-        // println!("{:?}", a.encode());
+        let a: ToTest = ToTest::O(Ok(true));
+        println!("{:?}", a.encode());
 
-        // let a: ToTest = ToTest::O(Err(Nested::SimpleN(76)));
-        // println!("{:?}", a.encode());
+        let a: ToTest = ToTest::O(Err(Nested::SimpleN(76)));
+        println!("{:?}", a.encode());
 
-        // let a: ToTest = ToTest::P(Ok(Nested::SimpleN(u32::MAX)));
-        // println!("{:?}", a.encode());
+        let a: ToTest = ToTest::P(Ok(Nested::SimpleN(u32::MAX)));
+        println!("{:?}", a.encode());
 
-        // let a: ToTest = ToTest::P(Err(Error::FailureX));
-        // println!("{:?}", a.encode());
+        let a: ToTest = ToTest::P(Err(Error::FailureX));
+        println!("{:?}", a.encode());
 
-        // let a: ToTest = ToTest::Q((Nested::SimpleN(77), 89, Error::FailureX));
-        // println!("{:?}", a.encode());
+        let a: ToTest = ToTest::Q((Nested::SimpleN(77), 89, Error::FailureX));
+        println!("{:?}", a.encode());
 
-        let binding = vec![1,32,0,0,0,0,0,0,0];
+        let binding = vec![1, 32, 0, 0, 0, 0, 0, 0, 0];
         let mut b: &[u8] = binding.as_slice();
         let res = ToTest::decode(&mut b).unwrap();
 
