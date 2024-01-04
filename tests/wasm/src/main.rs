@@ -1,3 +1,4 @@
+use std::env;
 use std::io::Read;
 use std::{borrow::BorrowMut, error::Error};
 
@@ -8,6 +9,13 @@ use wasmer_wasix::virtual_net::BytesMut;
 use wasmer_wasix::{Pipe, WasiEnv};
 
 fn main() -> Result<(), Box<dyn Error>> {
+    let args: Vec<u64> = env::args()
+        .collect::<Vec<String>>()
+        .into_iter()
+        .skip(1)
+        .map(|v| v.parse::<u64>().unwrap())
+        .collect();
+
     let wasm_path = "testdata/main.wasm";
     // Let's declare the Wasm module with the text representation.
     let wasm_bytes = std::fs::read(wasm_path)?;
@@ -39,24 +47,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     let memory = instance.exports.get_memory("memory")?;
     wasi_env.initialize(&mut store, instance.clone())?;
 
-    // We now have an instance ready to be used.
-    //
-    // We will start by querying the most intersting information
-    // about the memory: its size. There are mainly two ways of getting
-    // this:
-    // * the size as a number of `Page`s
-    // * the size as a number of bytes
-    //
-    // The size in bytes can be found either by querying its pages or by
-    // querying the memory directly.
-    println!("Querying memory size...");
-    let memory_view = memory.view(&store);
-    println!("{}", memory_view.size().0);
-    println!("{}", memory_view.size().bytes().0);
-    println!("{}", memory_view.data_size());
-
-    let x: u64 = 78;
-    let y: u64 = 100;
+    let x: u64 = args[0];
+    let y: u64 = args[1];
 
     let enc_x: Vec<u8> = (x as u64).encode();
     let enc_y = (y as u64).encode();
@@ -68,9 +60,6 @@ fn main() -> Result<(), Box<dyn Error>> {
     let y_ptr = malloc.call(&mut store, enc_y.len() as i32)?;
 
     let memory_view = memory.view(&store);
-
-    println!("A addr: {}", x_ptr.offset());
-    println!("B addr: {}", y_ptr.offset());
 
     x_ptr
         .slice(&memory_view, enc_x.len() as u32)?
@@ -90,9 +79,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         pointer_size(y_ptr.offset(), enc_y.len() as u32),
     )?;
 
-    println!("{}", result);
     let (resultPtr, resultLen) = split(result);
-    println!("ptr: {}, len: {}", resultPtr, resultLen);
 
     let memory_view = memory.view(&store);
 

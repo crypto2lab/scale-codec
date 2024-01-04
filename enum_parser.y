@@ -144,13 +144,3 @@ Result: RESULT "<" ComplexType "," ComplexType ">" {
 
 %%
 
-func hasGenericArgs(args []string) bool {
-    for _, input := range args {
-        if !strings.HasPrefix(input, "*"){
-            return true
-        }
-    }
-
-    return false
-}
-
