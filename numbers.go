@@ -94,6 +94,11 @@ func (u U128) MarshalSCALE() ([]byte, error) {
 
 func (u *U128) UnmarshalSCALE(reader io.Reader) error {
 	encoded := make([]byte, 16)
+	_, err := reader.Read(encoded)
+	if err != nil {
+		return err
+	}
+
 	u.lower = binary.LittleEndian.Uint64(encoded[:8])
 	u.upper = binary.LittleEndian.Uint64(encoded[8:])
 	return nil

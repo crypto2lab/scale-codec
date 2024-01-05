@@ -3,7 +3,7 @@ fn main() {}
 
 #[cfg(test)]
 mod tests {
-    use parity_scale_codec::Decode;
+    use parity_scale_codec::{Compact, Decode};
 
     use super::parity_scale_codec::Encode;
     use super::parity_scale_codec::Encode as DervieEncode;
@@ -53,6 +53,9 @@ mod tests {
 
     #[test]
     fn scale_encoded_integers() {
+        // 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+        println!("{:?} - {:?}", 4 as u64, (4 as u64).encode());
+
         println!("{:?} - {:?}", u8::MAX, u8::MAX.encode());
         println!("{:?} - {:?}", i8::MAX, i8::MAX.encode());
         println!("{:?} - {:?}", -10 as i8, (-10 as i8).encode());
@@ -155,5 +158,23 @@ mod tests {
         let res = ToTest::decode(&mut b).unwrap();
 
         println!("{:?}", res);
+    }
+
+    #[test]
+    fn compact() {
+        let v: Compact<u128> = Compact::from(u128::MAX);
+        println!("{:?}", v.encode());
+
+        for i in v.encode().into_iter() {
+            print!("{:#b} ", i);
+        }
+
+        println!("")
+    }
+
+    #[test]
+    fn vectors() {
+        let list: Vec<u8> = vec![1, 2, 3, 4];
+        println!("{:?}", list.encode());
     }
 }

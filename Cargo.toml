@@ -9,6 +9,9 @@ name = "go-scale-codec"
 path = "tests/rust-scale-codec/src/lib.rs"
 
 [dependencies]
+parity-scale-codec = { version = "3.6.8", default_features = true, features = [
+    "derive",
+] }
 
 [workspace]
 resolver = "2"
