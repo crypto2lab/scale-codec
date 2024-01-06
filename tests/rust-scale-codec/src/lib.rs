@@ -162,7 +162,7 @@ mod tests {
 
     #[test]
     fn compact() {
-        let v: Compact<u128> = Compact::from(u128::MAX);
+        let v: Compact<u128> = Compact::from((u128::MAX as u128));
         println!("{:?}", v.encode());
 
         for i in v.encode().into_iter() {

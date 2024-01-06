@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"math/big"
+	"math/bits"
 	"unsafe"
 
 	"golang.org/x/exp/constraints"
@@ -68,20 +69,27 @@ type U128 struct {
 	lower uint64
 }
 
-func U128FromBigInt(b *big.Int) U128 {
+func U128FromUpperLower(u, l uint64) *U128 {
+	return &U128{upper: u, lower: l}
+}
+
+func U128FromBigInt(b *big.Int) *U128 {
 	words := b.Bits()
 	switch len(words) {
 	case 0:
-		return U128{}
+		return &U128{}
 	case 1:
-		return U128{lower: uint64(words[0])}
+		return &U128{lower: uint64(words[0])}
 	case 2:
-		return U128{
+		return &U128{
 			lower: uint64(words[0]),
 			upper: uint64(words[1]),
 		}
 	default:
-		return MaxU128
+		return &U128{
+			lower: ^uint64(0),
+			upper: ^uint64(0),
+		}
 	}
 }
 
@@ -108,4 +116,26 @@ func (u *U128) ToBigInt() *big.Int {
 	bigint := new(big.Int)
 	bigint.SetBits([]big.Word{big.Word(u.lower), big.Word(u.upper)})
 	return bigint
+}
+
+func (u *U128) LeadingZeros() int {
+	if u.upper == 0 {
+		return 64 + bits.LeadingZeros64(u.lower)
+	}
+
+	return bits.LeadingZeros64(u.upper)
+}
+
+func (u *U128) Rsh(v int) {
+	u.lower >>= v
+	u.lower |= (u.upper << (64 - v))
+	u.upper >>= v
+}
+
+func (u *U128) AsUint8() uint8 {
+	return uint8(u.lower)
+}
+
+func (u *U128) IsZero() bool {
+	return u.upper == 0 && u.lower == 0
 }
